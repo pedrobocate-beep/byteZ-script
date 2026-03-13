@@ -1,345 +1,1191 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ByteZ Scripts Hub | Online</title>
-    
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    
-    <style>
-        :root {
-            --bg: #0d0d0f;
-            --card: #16161a;
-            --primary: #8a2be2;
-            --accent: #00f2ff;
-            --text: #ffffff;
-            --text-dim: #94a3b8;
-            --danger: #ff4757;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ByteZ Scripts – Hub de Scripts Lua</title>
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
-        body {
-            background-color: var(--bg);
-            color: var(--text);
-            overflow-x: hidden;
-        }
+<!-- Icons & Fonts -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-        /* Navbar */
-        header {
-            background: rgba(22, 22, 26, 0.95);
-            padding: 15px 5%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #2d2d35;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            backdrop-filter: blur(10px);
-        }
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06060c;--bg2:#0c0c16;--bg3:#111122;
+  --card:rgba(255,255,255,.03);--card-hover:rgba(255,255,255,.06);
+  --border:rgba(255,255,255,.06);--border-hover:rgba(0,255,136,.25);
+  --accent:#00ff88;--accent2:#00d4ff;--accent3:#7c3aed;--danger:#ff4466;
+  --text:#e0e0e8;--text2:#8888aa;
+  --grad:linear-gradient(135deg,#00ff88,#00d4ff);
+  --shadow:0 8px 32px rgba(0,0,0,.4);
+  --radius:12px;--radius-sm:8px;
+  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;--title:'Rajdhani',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font);background:var(--bg);color:var(--text);
+  min-height:100vh;overflow-x:hidden;
+  background-image:
+    linear-gradient(rgba(0,255,136,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,255,136,.015) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:var(--font);border:none;outline:none}
+input,textarea{font-family:var(--font);outline:none}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px}
 
-        .logo { font-size: 24px; font-weight: bold; color: var(--text); cursor: pointer; }
-        .logo span { color: var(--primary); }
+/* NAVBAR */
+.navbar{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  background:rgba(6,6,12,.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:.3s;
+}
+.navbar.scrolled{background:rgba(6,6,12,.95);box-shadow:0 4px 30px rgba(0,0,0,.5)}
+.nav-brand{
+  font-family:var(--title);font-size:1.6rem;font-weight:700;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;
+  display:flex;align-items:center;gap:8px;user-select:none;
+}
+.nav-brand i{-webkit-text-fill-color:var(--accent);font-size:1.3rem;filter:drop-shadow(0 0 8px rgba(0,255,136,.4))}
+.nav-center{flex:1;max-width:420px;margin:0 24px}
+.search-box{position:relative;width:100%}
+.search-box input{
+  width:100%;padding:10px 16px 10px 40px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:50px;
+  color:var(--text);font-size:.9rem;transition:.3s;
+}
+.search-box input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,255,136,.1)}
+.search-box input::placeholder{color:var(--text2)}
+.search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2);font-size:.85rem}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-btn{
+  padding:8px 18px;border-radius:50px;font-size:.85rem;font-weight:600;
+  transition:.3s;display:flex;align-items:center;gap:6px;
+}
+.nav-btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
+.nav-btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.nav-btn-primary{background:var(--grad);color:#000;border:none}
+.nav-btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,255,136,.3)}
+.user-area{display:flex;align-items:center;gap:12px}
+.user-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--grad);display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:#000;font-size:.85rem;
+}
+.user-name{font-weight:600;font-size:.9rem;color:var(--accent)}
+.nav-btn-danger{background:transparent;border:1px solid rgba(255,68,102,.3);color:var(--danger)}
+.nav-btn-danger:hover{background:rgba(255,68,102,.1);border-color:var(--danger)}
 
-        .auth-controls { display: flex; align-items: center; gap: 15px; }
-        .user-tag { font-size: 14px; color: var(--accent); font-weight: 500; }
+/* HERO */
+.hero{padding:120px 24px 40px;text-align:center;position:relative}
+.hero::after{
+  content:'';position:absolute;top:60px;left:50%;transform:translateX(-50%);
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(0,255,136,.06) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero h1{font-family:var(--title);font-size:clamp(2.2rem,5vw,3.5rem);font-weight:700;margin-bottom:12px;line-height:1.1}
+.hero h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text2);font-size:1.05rem;max-width:500px;margin:0 auto 30px}
+.stats-row{display:flex;justify-content:center;gap:40px;flex-wrap:wrap}
+.stat{text-align:center}
+.stat-num{
+  font-family:var(--title);font-size:2rem;font-weight:700;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.stat-label{color:var(--text2);font-size:.8rem;text-transform:uppercase;letter-spacing:1px}
 
-        /* Botões */
-        .btn {
-            padding: 10px 20px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            font-weight: 600;
-            transition: 0.3s;
-        }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-primary:hover { background: #7a1fd1; transform: translateY(-2px); }
-        .btn-outline { background: transparent; border: 1px solid var(--primary); color: white; }
-        .btn-logout { background: transparent; color: var(--danger); border: none; font-size: 13px; }
+/* FILTERS */
+.filters{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 24px 20px;flex-wrap:wrap}
+.filter-btn{
+  padding:8px 20px;border-radius:50px;font-size:.85rem;font-weight:500;
+  background:var(--bg3);border:1px solid var(--border);color:var(--text2);transition:.3s;
+}
+.filter-btn:hover{color:var(--text);border-color:rgba(255,255,255,.15)}
+.filter-btn.active{background:var(--grad);color:#000;border-color:transparent;font-weight:600;box-shadow:0 4px 20px rgba(0,255,136,.2)}
 
-        /* Grid de Scripts */
-        main { padding: 40px 5%; max-width: 1200px; margin: 0 auto; }
-        .search-area { margin-bottom: 40px; text-align: center; }
-        .search-area input {
-            width: 100%;
-            max-width: 500px;
-            padding: 12px 20px;
-            background: #000;
-            border: 1px solid #333;
-            border-radius: 25px;
-            color: white;
-            font-size: 16px;
-        }
+/* GRID */
+.container{max-width:1200px;margin:0 auto;padding:0 24px 60px}
+.scripts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
+.script-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px;transition:.35s;position:relative;overflow:hidden;
+  animation:fadeUp .5s ease both;
+}
+.script-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--grad);opacity:0;transition:.35s;
+}
+.script-card:hover{
+  border-color:var(--border-hover);background:var(--card-hover);
+  transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.4);
+}
+.script-card:hover::before{opacity:1}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.card-title{font-family:var(--title);font-size:1.25rem;font-weight:700;color:var(--text);line-height:1.3;flex:1;margin-right:10px}
+.card-badge{
+  padding:3px 10px;border-radius:50px;font-size:.7rem;font-weight:600;
+  background:rgba(0,255,136,.1);color:var(--accent);border:1px solid rgba(0,255,136,.2);white-space:nowrap;
+}
+.card-desc{
+  color:var(--text2);font-size:.88rem;line-height:1.5;margin-bottom:16px;
+  display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+}
+.card-code{
+  background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:12px 14px;margin-bottom:16px;
+  font-family:var(--mono);font-size:.78rem;color:var(--accent);
+  max-height:80px;overflow:hidden;position:relative;
+  line-height:1.5;white-space:pre-wrap;word-break:break-all;
+}
+.card-code::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:30px;
+  background:linear-gradient(transparent,rgba(0,0,0,.6));
+}
+.card-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.card-author{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text2)}
+.card-author i{color:var(--accent3);font-size:.75rem}
+.card-date{font-size:.78rem;color:var(--text2)}
+.card-stats{display:flex;align-items:center;gap:14px;font-size:.8rem;color:var(--text2)}
+.card-stats span{display:flex;align-items:center;gap:4px}
+.card-stats i{font-size:.75rem}
+.card-actions{display:flex;gap:8px;flex-wrap:wrap}
+.action-btn{
+  flex:1;min-width:0;padding:10px 12px;border-radius:var(--radius-sm);
+  font-size:.82rem;font-weight:600;transition:.3s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-copy{background:rgba(0,255,136,.08);color:var(--accent);border:1px solid rgba(0,255,136,.15)}
+.btn-copy:hover{background:rgba(0,255,136,.15);border-color:rgba(0,255,136,.3)}
+.btn-view{background:rgba(0,212,255,.08);color:var(--accent2);border:1px solid rgba(0,212,255,.15)}
+.btn-view:hover{background:rgba(0,212,255,.15);border-color:rgba(0,212,255,.3)}
+.btn-like{background:rgba(124,58,237,.08);color:var(--accent3);border:1px solid rgba(124,58,237,.15)}
+.btn-like:hover{background:rgba(124,58,237,.15);border-color:rgba(124,58,237,.3)}
+.btn-like.liked{background:rgba(124,58,237,.2);border-color:rgba(124,58,237,.4);color:#a78bfa}
+.btn-delete{background:rgba(255,68,102,.08);color:var(--danger);border:1px solid rgba(255,68,102,.15)}
+.btn-delete:hover{background:rgba(255,68,102,.15);border-color:rgba(255,68,102,.3)}
 
-        .scripts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-        }
+/* EMPTY */
+.empty-state{text-align:center;padding:80px 20px;grid-column:1/-1}
+.empty-state i{font-size:3rem;color:var(--text2);margin-bottom:16px;opacity:.4}
+.empty-state h3{font-family:var(--title);font-size:1.4rem;color:var(--text2);margin-bottom:8px}
+.empty-state p{color:var(--text2);font-size:.9rem;opacity:.7}
 
-        /* Card do Script */
-        .script-card {
-            background: var(--card);
-            border: 1px solid #2d2d35;
-            border-radius: 12px;
-            padding: 20px;
-            transition: 0.3s;
-            position: relative;
-        }
-        .script-card:hover { border-color: var(--primary); transform: translateY(-5px); }
-        .script-card h3 { color: var(--primary); margin-bottom: 8px; }
-        .script-card p { font-size: 14px; color: var(--text-dim); margin-bottom: 15px; height: 40px; overflow: hidden; }
-        
-        .code-snippet {
-            background: #000;
-            padding: 10px;
-            border-radius: 5px;
-            font-family: monospace;
-            font-size: 12px;
-            color: #00ff88;
-            margin-bottom: 15px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
+/* MODALS */
+.modal-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;z-index:2000;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;
+  padding:20px;opacity:0;transition:.3s;
+}
+.modal-overlay.active{display:flex;opacity:1}
+.modal{
+  background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
+  box-shadow:0 24px 80px rgba(0,0,0,.6);
+  transform:scale(.95) translateY(20px);transition:.35s;
+}
+.modal-overlay.active .modal{transform:scale(1) translateY(0)}
+.modal-lg{max-width:720px}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:24px 28px 0}
+.modal-header h2{
+  font-family:var(--title);font-size:1.5rem;font-weight:700;
+  background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+}
+.modal-close{
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.05);color:var(--text2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;transition:.3s;
+}
+.modal-close:hover{background:rgba(255,68,102,.15);color:var(--danger)}
+.modal-body{padding:24px 28px 28px}
 
-        .card-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 12px;
-            color: #555;
-            border-top: 1px solid #2d2d35;
-            padding-top: 15px;
-        }
+/* AUTH TABS */
+.auth-tabs{display:flex;gap:0;margin-bottom:24px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border)}
+.auth-tab{
+  flex:1;padding:12px;text-align:center;font-weight:600;font-size:.9rem;
+  background:transparent;color:var(--text2);transition:.3s;
+}
+.auth-tab.active{background:var(--grad);color:#000}
+.auth-tab:hover:not(.active){background:rgba(255,255,255,.03)}
 
-        /* Modais */
-        .modal {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.9);
-            z-index: 1000;
-            align-items: center;
-            justify-content: center;
-        }
-        .modal-content {
-            background: var(--card);
-            width: 90%;
-            max-width: 500px;
-            padding: 30px;
-            border-radius: 15px;
-            border: 1px solid var(--primary);
-        }
-        .modal-content input, .modal-content textarea {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            background: #000;
-            border: 1px solid #333;
-            color: white;
-            border-radius: 8px;
-        }
+/* FORMS */
+.form-group{margin-bottom:18px}
+.form-group label{
+  display:block;font-size:.85rem;font-weight:600;color:var(--text2);
+  margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;
+}
+.form-group input,.form-group textarea{
+  width:100%;padding:12px 16px;
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text);font-size:.9rem;transition:.3s;
+}
+.form-group input:focus,.form-group textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,255,136,.08)}
+.form-group textarea{resize:vertical;min-height:100px;font-family:var(--mono);font-size:.85rem}
+.form-group textarea.code-input{min-height:200px;color:var(--accent);background:rgba(0,0,0,.3)}
+.submit-btn{
+  width:100%;padding:14px;border-radius:var(--radius-sm);
+  background:var(--grad);color:#000;font-size:1rem;font-weight:700;
+  transition:.3s;text-transform:uppercase;letter-spacing:1px;
+}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,255,136,.3)}
+.submit-btn:active{transform:translateY(0)}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
 
-        .delete-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: none;
-            border: none;
-            color: #333;
-            cursor: pointer;
-        }
-        .delete-btn:hover { color: var(--danger); }
+/* VIEW */
+.view-title{font-family:var(--title);font-size:1.6rem;font-weight:700;margin-bottom:6px}
+.view-meta{display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.view-meta span{font-size:.85rem;color:var(--text2);display:flex;align-items:center;gap:5px}
+.view-desc{color:var(--text2);font-size:.92rem;line-height:1.6;margin-bottom:20px}
+.view-code-block{
+  background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:20px;font-family:var(--mono);font-size:.82rem;
+  color:var(--accent);line-height:1.6;
+  max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;
+}
+.view-code-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.view-code-header span{font-family:var(--title);font-size:.95rem;color:var(--text2);font-weight:600}
+.view-actions{display:flex;gap:10px;margin-top:20px}
+.view-actions .action-btn{flex:unset;padding:12px 24px}
 
-    </style>
+/* STATUS BAR */
+.status-bar{
+  position:fixed;bottom:0;left:0;right:0;
+  background:rgba(6,6,12,.95);border-top:1px solid var(--border);
+  padding:8px 24px;display:flex;align-items:center;justify-content:space-between;
+  font-size:.78rem;color:var(--text2);z-index:999;
+}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
+.status-dot.online{background:var(--accent);box-shadow:0 0 8px rgba(0,255,136,.5)}
+.status-dot.offline{background:var(--danger)}
+
+/* TOAST */
+.toast-container{position:fixed;bottom:50px;right:24px;z-index:3000;display:flex;flex-direction:column;gap:10px}
+.toast{
+  padding:14px 22px;border-radius:var(--radius-sm);
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text);font-size:.88rem;font-weight:500;
+  box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;
+  animation:slideIn .35s ease;min-width:280px;
+}
+.toast.success{border-color:rgba(0,255,136,.3)}
+.toast.success i{color:var(--accent)}
+.toast.error{border-color:rgba(255,68,102,.3)}
+.toast.error i{color:var(--danger)}
+.toast.info{border-color:rgba(0,212,255,.3)}
+.toast.info i{color:var(--accent2)}
+
+/* LOADER */
+.loader{display:flex;justify-content:center;padding:60px;grid-column:1/-1}
+.spinner{
+  width:40px;height:40px;border:3px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+
+/* REALTIME BADGE */
+.realtime-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:50px;
+  background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);
+  font-size:.75rem;color:var(--accent);font-weight:600;
+  animation:pulse 2s ease infinite;
+}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+
+@media(max-width:768px){
+  .navbar{padding:0 14px;gap:8px}
+  .nav-center{max-width:none;margin:0 10px;flex:1}
+  .nav-right{gap:6px}
+  .nav-btn span.btn-text{display:none}
+  .nav-btn{padding:8px 12px}
+  .user-name{display:none}
+  .hero h1{font-size:1.8rem}
+  .scripts-grid{grid-template-columns:1fr}
+  .modal{margin:10px;max-height:95vh}
+  .stats-row{gap:20px}
+  .view-actions{flex-direction:column}
+  .view-actions .action-btn{flex:1}
+  .status-bar{font-size:.7rem;padding:6px 14px}
+}
+@media(max-width:480px){
+  .hero{padding:100px 16px 30px}
+  .container{padding:0 12px 40px}
+  .script-card{padding:18px}
+  .card-actions{flex-direction:column}
+  .action-btn{flex:unset}
+}
+</style>
 </head>
 <body>
 
-    <header>
-        <div class="logo" onclick="location.reload()">ByteZ<span>Hub</span></div>
-        <div class="auth-controls" id="authUI">
-            <button class="btn btn-primary" onclick="openModal('loginModal')">Entrar</button>
-        </div>
-    </header>
-
-    <main>
-        <div class="search-area">
-            <h1>Scripts Comunitários</h1>
-            <p style="color: var(--text-dim); margin-bottom: 20px;">Explore scripts postados por outros usuários ou poste o seu.</p>
-            <input type="text" id="searchInput" placeholder="Pesquisar por nome do script...">
-            <br>
-            <button id="postBtn" class="btn btn-primary" style="display:none; margin-top: 20px;" onclick="openModal('postModal')">
-                <i class="fas fa-plus"></i> Postar Novo Script
-            </button>
-        </div>
-
-        <div class="scripts-grid" id="scriptsGrid">
-            </div>
-    </main>
-
-    <div id="loginModal" class="modal">
-        <div class="modal-content">
-            <h2 style="margin-bottom: 20px;">Login / Cadastro</h2>
-            <input type="email" id="email" placeholder="E-mail">
-            <input type="password" id="password" placeholder="Senha">
-            <button class="btn btn-primary" style="width: 100%;" onclick="handleAuth()">Confirmar</button>
-            <button class="btn btn-logout" style="width: 100%; margin-top: 10px;" onclick="closeModal('loginModal')">Cancelar</button>
-        </div>
+<!-- NAVBAR -->
+<nav class="navbar" id="navbar">
+  <a href="#" class="nav-brand" onclick="event.preventDefault();resetFilters()">
+    <i class="fa-solid fa-terminal"></i> ByteZ Scripts
+  </a>
+  <div class="nav-center">
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="searchInput" placeholder="Buscar scripts..." oninput="handleSearch()">
     </div>
+  </div>
+  <div class="nav-right" id="navRight"></div>
+</nav>
 
-    <div id="postModal" class="modal">
-        <div class="modal-content">
-            <h2 style="margin-bottom: 20px;">Publicar Script</h2>
-            <input type="text" id="scriptTitle" placeholder="Título (ex: Auto Farm Blox Fruits)">
-            <textarea id="scriptDesc" placeholder="Descrição rápida..."></textarea>
-            <textarea id="scriptCode" placeholder="Cole o código LUA aqui..." style="height: 150px; font-family: monospace;"></textarea>
-            <button class="btn btn-primary" style="width: 100%;" onclick="saveScript()">Publicar Online</button>
-            <button class="btn btn-logout" style="width: 100%; margin-top: 10px;" onclick="closeModal('postModal')">Fechar</button>
-        </div>
+<!-- HERO -->
+<section class="hero">
+  <h1>Explore os melhores<br><span>Scripts Lua</span></h1>
+  <p>Encontre, compartilhe e copie scripts para seus projetos. Comunidade aberta para todos.</p>
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-num" id="totalScripts">0</div>
+      <div class="stat-label">Scripts</div>
     </div>
+    <div class="stat">
+      <div class="stat-num" id="totalLikes">0</div>
+      <div class="stat-label">Curtidas</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="totalViews">0</div>
+      <div class="stat-label">Visualizações</div>
+    </div>
+  </div>
+</section>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js";
+<!-- FILTERS -->
+<div class="filters">
+  <div class="realtime-badge"><span class="status-dot online"></span> Tempo Real</div>
+  <button class="filter-btn active" data-filter="recent" onclick="setFilter('recent')">
+    <i class="fa-solid fa-clock"></i> Recentes
+  </button>
+  <button class="filter-btn" data-filter="popular" onclick="setFilter('popular')">
+    <i class="fa-solid fa-fire"></i> Populares
+  </button>
+  <button class="filter-btn" data-filter="most-viewed" onclick="setFilter('most-viewed')">
+    <i class="fa-solid fa-eye"></i> Mais Vistos
+  </button>
+  <button class="filter-btn" data-filter="mine" onclick="setFilter('mine')" id="filterMine" style="display:none">
+    <i class="fa-solid fa-user"></i> Meus Scripts
+  </button>
+</div>
 
-        // Sua configuração do Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyDbmJbhYLofmkF99TwhF_skc_iAnwBTNPY",
-            authDomain: "bytez-script.firebaseapp.com",
-            projectId: "bytez-script",
-            storageBucket: "bytez-script.firebasestorage.app",
-            messagingSenderId: "716754895227",
-            appId: "1:716754895227:web:f661b3dbfd25df9b6bfdde"
-        };
+<!-- SCRIPTS GRID -->
+<div class="container">
+  <div class="scripts-grid" id="scriptsGrid">
+    <div class="loader"><div class="spinner"></div></div>
+  </div>
+</div>
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="authTitle">Entrar</h2>
+      <button class="modal-close" onclick="closeModal('authModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Login</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Cadastro</button>
+      </div>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="seu@email.com" required>
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required minlength="6">
+        </div>
+        <button type="submit" class="submit-btn" id="loginBtn">
+          <i class="fa-solid fa-right-to-bracket"></i> Entrar
+        </button>
+      </form>
+      <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label>Nome de Usuário</label>
+          <input type="text" id="regUsername" placeholder="ByteZMaster" required minlength="3" maxlength="20">
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="regEmail" placeholder="seu@email.com" required>
+        </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
+        </div>
+        <button type="submit" class="submit-btn" id="regBtn">
+          <i class="fa-solid fa-user-plus"></i> Criar Conta
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
 
-        let userLogado = null;
+<!-- POST MODAL -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-plus"></i> Novo Script</h2>
+      <button class="modal-close" onclick="closeModal('postModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="postForm" onsubmit="handlePost(event)">
+        <div class="form-group">
+          <label>Título do Script</label>
+          <input type="text" id="postTitle" placeholder="Ex: Infinite Yield Admin" required maxlength="80">
+        </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <input type="text" id="postDesc" placeholder="O que este script faz?" required maxlength="200">
+        </div>
+        <div class="form-group">
+          <label><i class="fa-solid fa-code"></i> Código Lua</label>
+          <textarea id="postCode" class="code-input" placeholder='loadstring(game:HttpGet("https://pastefy.app/xxxxx/raw"))()' required></textarea>
+        </div>
+        <button type="submit" class="submit-btn" id="postBtn">
+          <i class="fa-solid fa-paper-plane"></i> Publicar Script
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
 
-        // --- FUNÇÕES DE INTERFACE ---
-        window.openModal = (id) => document.getElementById(id).style.display = 'flex';
-        window.closeModal = (id) => document.getElementById(id).style.display = 'none';
+<!-- VIEW MODAL -->
+<div class="modal-overlay" id="viewModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-code"></i> Detalhes do Script</h2>
+      <button class="modal-close" onclick="closeModal('viewModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="viewBody"></div>
+  </div>
+</div>
 
-        // --- AUTENTICAÇÃO ---
-        window.handleAuth = async () => {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('password').value;
-            try {
-                // Tenta logar, se não conseguir, tenta criar conta (simplificado)
-                await signInWithEmailAndPassword(auth, email, pass).catch(() => {
-                    return createUserWithEmailAndPassword(auth, email, pass);
-                });
-                closeModal('loginModal');
-            } catch (e) { alert("Erro: " + e.message); }
-        };
+<!-- TOASTS -->
+<div class="toast-container" id="toastContainer"></div>
 
-        window.sair = () => signOut(auth);
+<!-- STATUS BAR -->
+<div class="status-bar">
+  <div>
+    <span class="status-dot online" id="statusDot"></span>
+    <span id="statusText">Conectado ao Firebase</span>
+  </div>
+  <div id="statusUser">Visitante</div>
+</div>
 
-        onAuthStateChanged(auth, (user) => {
-            const authUI = document.getElementById('authUI');
-            const postBtn = document.getElementById('postBtn');
-            userLogado = user;
+<!-- ══════════════════════════ JAVASCRIPT ══════════════════════════ -->
+<script>
+// ══════════════════════════════════════════
+//  FIREBASE INIT
+// ══════════════════════════════════════════
+var firebaseConfig = {
+  apiKey: "AIzaSyDbmJbhYLofmkF99TwhF_skc_iAnwBTNPY",
+  authDomain: "bytez-script.firebaseapp.com",
+  projectId: "bytez-script",
+  storageBucket: "bytez-script.firebasestorage.app",
+  messagingSenderId: "716754895227",
+  appId: "1:716754895227:web:f661b3dbfd25df9b6bfdde"
+};
 
-            if (user) {
-                authUI.innerHTML = `
-                    <span class="user-tag"><i class="fas fa-user"></i> ${user.email.split('@')[0]}</span>
-                    <button class="btn-logout" onclick="sair()">Sair</button>
-                `;
-                postBtn.style.display = 'block';
-            } else {
-                authUI.innerHTML = `<button class="btn btn-primary" onclick="openModal('loginModal')">Entrar</button>`;
-                postBtn.style.display = 'none';
-            }
-        });
+firebase.initializeApp(firebaseConfig);
+var auth = firebase.auth();
+var db = firebase.firestore();
 
-        // --- BANCO DE DADOS (Firestore) ---
+// Ativar persistência offline (cache local)
+db.enablePersistence().catch(function(err) {
+  console.log('Persistência offline não disponível:', err.code);
+});
 
-        // 1. Salvar novo script
-        window.saveScript = async () => {
-            const title = document.getElementById('scriptTitle').value;
-            const desc = document.getElementById('scriptDesc').value;
-            const code = document.getElementById('scriptCode').value;
+// ══════════════════════════════════════════
+//  ESTADO GLOBAL
+// ══════════════════════════════════════════
+var currentUser = null;
+var currentUsername = '';
+var allScripts = [];
+var currentFilter = 'recent';
+var searchQuery = '';
+var unsubscribeListener = null; // Listener em tempo real
 
-            if (!title || !code) return alert("Preencha o título e o código!");
+// ══════════════════════════════════════════
+//  AUTH — OBSERVADOR DE LOGIN
+// ══════════════════════════════════════════
+auth.onAuthStateChanged(function(user) {
+  currentUser = user;
 
-            try {
-                await addDoc(collection(db, "scripts"), {
-                    title: title,
-                    desc: desc,
-                    code: code,
-                    author: userLogado.email.split('@')[0],
-                    authorId: userLogado.uid,
-                    createdAt: Date.now()
-                });
-                
-                // Limpar e fechar
-                document.getElementById('scriptTitle').value = '';
-                document.getElementById('scriptDesc').value = '';
-                document.getElementById('scriptCode').value = '';
-                closeModal('postModal');
-                alert("Script publicado com sucesso!");
-            } catch (e) { alert("Erro ao salvar: " + e.message); }
-        };
+  if (user) {
+    // Buscar nome de usuário no Firestore
+    db.collection('users').doc(user.uid).get().then(function(doc) {
+      if (doc.exists) {
+        currentUsername = doc.data().username;
+      } else {
+        currentUsername = user.email.split('@')[0];
+      }
+      renderNav();
+      document.getElementById('statusUser').textContent = currentUsername;
+    }).catch(function() {
+      currentUsername = user.email.split('@')[0];
+      renderNav();
+    });
+  } else {
+    currentUsername = '';
+    renderNav();
+    document.getElementById('statusUser').textContent = 'Visitante';
+  }
 
-        // 2. Deletar script (só o dono pode)
-        window.apagarScript = async (id) => {
-            if (confirm("Deseja apagar este script permanentemente?")) {
-                await deleteDoc(doc(db, "scripts", id));
-            }
-        };
+  // Iniciar listener em tempo real
+  startRealtimeListener();
+});
 
-        // 3. Copiar Script
-        window.copiar = (text) => {
-            navigator.clipboard.writeText(text);
-            alert("Script copiado para a área de transferência!");
-        };
+// ══════════════════════════════════════════
+//  NAVBAR
+// ══════════════════════════════════════════
+function renderNav() {
+  var nav = document.getElementById('navRight');
+  var filterMine = document.getElementById('filterMine');
 
-        // 4. Carregar scripts do banco em tempo real
-        const q = query(collection(db, "scripts"), orderBy("createdAt", "desc"));
-        onSnapshot(q, (snapshot) => {
-            const grid = document.getElementById('scriptsGrid');
-            grid.innerHTML = ''; // Limpa a tela para atualizar
+  if (currentUser) {
+    var initial = currentUsername ? currentUsername.charAt(0).toUpperCase() : '?';
+    nav.innerHTML =
+      '<div class="user-area">' +
+        '<div class="user-avatar">' + initial + '</div>' +
+        '<span class="user-name">' + escapeHtml(currentUsername) + '</span>' +
+      '</div>' +
+      '<button class="nav-btn nav-btn-primary" onclick="openModal(\'postModal\')">' +
+        '<i class="fa-solid fa-plus"></i><span class="btn-text"> Postar</span>' +
+      '</button>' +
+      '<button class="nav-btn nav-btn-danger" onclick="handleLogout()" title="Sair">' +
+        '<i class="fa-solid fa-right-from-bracket"></i>' +
+      '</button>';
+    filterMine.style.display = '';
+  } else {
+    nav.innerHTML =
+      '<button class="nav-btn nav-btn-outline" onclick="openModal(\'authModal\')">' +
+        '<i class="fa-solid fa-right-to-bracket"></i><span class="btn-text"> Entrar</span>' +
+      '</button>' +
+      '<button class="nav-btn nav-btn-primary" onclick="openAuthRegister()">' +
+        '<i class="fa-solid fa-user-plus"></i><span class="btn-text"> Cadastro</span>' +
+      '</button>';
+    filterMine.style.display = 'none';
+    if (currentFilter === 'mine') setFilter('recent');
+  }
+}
 
-            snapshot.forEach((doc) => {
-                const data = doc.data();
-                const id = doc.id;
-                const eDono = userLogado && userLogado.uid === data.authorId;
+// ══════════════════════════════════════════
+//  AUTH — LOGIN
+// ══════════════════════════════════════════
+function handleLogin(e) {
+  e.preventDefault();
+  var btn = document.getElementById('loginBtn');
+  var email = document.getElementById('loginEmail').value.trim();
+  var pass = document.getElementById('loginPassword').value;
 
-                grid.innerHTML += `
-                    <div class="script-card">
-                        ${eDono ? `<button class="delete-btn" onclick="apagarScript('${id}')"><i class="fas fa-trash"></i></button>` : ''}
-                        <h3>${data.title}</h3>
-                        <p>${data.desc || 'Sem descrição.'}</p>
-                        <div class="code-snippet">${data.code}</div>
-                        <button class="btn btn-outline" style="width:100%" onclick="copiar(\`${data.code}\`)">
-                            <i class="fas fa-copy"></i> Copiar Script
-                        </button>
-                        <div class="card-footer">
-                            <span><i class="fas fa-user-circle"></i> ${data.author}</span>
-                            <span>${new Date(data.createdAt).toLocaleDateString()}</span>
-                        </div>
-                    </div>
-                `;
-            });
-        });
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Entrando...';
 
-        // 5. Filtro de Busca
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            const termo = e.target.value.toLowerCase();
-            const cards = document.querySelectorAll('.script-card');
-            cards.forEach(card => {
-                const titulo = card.querySelector('h3').innerText.toLowerCase();
-                card.style.display = titulo.includes(termo) ? 'block' : 'none';
-            });
-        });
+  auth.signInWithEmailAndPassword(email, pass)
+    .then(function() {
+      toast('Login realizado com sucesso!', 'success');
+      closeModal('authModal');
+      document.getElementById('loginForm').reset();
+    })
+    .catch(function(err) {
+      toast(firebaseError(err.code), 'error');
+    })
+    .finally(function() {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
+    });
+}
 
-    </script>
+// ══════════════════════════════════════════
+//  AUTH — CADASTRO
+// ══════════════════════════════════════════
+function handleRegister(e) {
+  e.preventDefault();
+  var btn = document.getElementById('regBtn');
+  var username = document.getElementById('regUsername').value.trim();
+  var email = document.getElementById('regEmail').value.trim();
+  var pass = document.getElementById('regPassword').value;
+
+  if (username.length < 3) {
+    toast('Nome deve ter pelo menos 3 caracteres.', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Criando conta...';
+
+  auth.createUserWithEmailAndPassword(email, pass)
+    .then(function(cred) {
+      // Salvar perfil do usuário no Firestore
+      return db.collection('users').doc(cred.user.uid).set({
+        username: username,
+        email: email,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    })
+    .then(function() {
+      toast('Conta criada! Bem-vindo, ' + username + '!', 'success');
+      closeModal('authModal');
+      document.getElementById('registerForm').reset();
+    })
+    .catch(function(err) {
+      toast(firebaseError(err.code), 'error');
+    })
+    .finally(function() {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Criar Conta';
+    });
+}
+
+// ══════════════════════════════════════════
+//  AUTH — LOGOUT
+// ══════════════════════════════════════════
+function handleLogout() {
+  auth.signOut().then(function() {
+    toast('Você saiu da conta.', 'info');
+  });
+}
+
+// ══════════════════════════════════════════
+//  AUTH — TABS
+// ══════════════════════════════════════════
+function switchAuthTab(tab) {
+  document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
+  document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
+  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
+  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
+  document.getElementById('authTitle').textContent = tab === 'login' ? 'Entrar' : 'Criar Conta';
+}
+
+function openAuthRegister() {
+  openModal('authModal');
+  switchAuthTab('register');
+}
+
+function firebaseError(code) {
+  var errors = {
+    'auth/user-not-found': 'Usuário não encontrado.',
+    'auth/wrong-password': 'Senha incorreta.',
+    'auth/email-already-in-use': 'Este email já está em uso.',
+    'auth/weak-password': 'Senha deve ter pelo menos 6 caracteres.',
+    'auth/invalid-email': 'Email inválido.',
+    'auth/too-many-requests': 'Muitas tentativas. Aguarde.',
+    'auth/invalid-credential': 'Email ou senha incorretos.'
+  };
+  return errors[code] || 'Erro: ' + code;
+}
+
+// ══════════════════════════════════════════
+//  SCRIPTS — LISTENER EM TEMPO REAL
+//  (Atualiza automaticamente quando alguém
+//   posta, deleta ou altera um script)
+// ══════════════════════════════════════════
+function startRealtimeListener() {
+  // Desconectar listener anterior
+  if (unsubscribeListener) {
+    unsubscribeListener();
+  }
+
+  var query = db.collection('scripts');
+
+  if (currentFilter === 'popular') {
+    query = query.orderBy('likes', 'desc');
+  } else if (currentFilter === 'most-viewed') {
+    query = query.orderBy('views', 'desc');
+  } else {
+    query = query.orderBy('createdAt', 'desc');
+  }
+
+  query = query.limit(200);
+
+  var grid = document.getElementById('scriptsGrid');
+  grid.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+
+  // onSnapshot = TEMPO REAL — recebe atualizações automáticas
+  unsubscribeListener = query.onSnapshot(function(snapshot) {
+    allScripts = [];
+    snapshot.forEach(function(doc) {
+      var data = doc.data();
+      data.id = doc.id;
+      allScripts.push(data);
+    });
+
+    updateStats();
+    renderScripts();
+
+    // Atualizar status
+    document.getElementById('statusDot').className = 'status-dot online';
+    document.getElementById('statusText').textContent =
+      'Conectado — ' + allScripts.length + ' scripts online';
+
+  }, function(error) {
+    console.error('Erro no listener:', error);
+    document.getElementById('statusDot').className = 'status-dot offline';
+    document.getElementById('statusText').textContent = 'Erro de conexão';
+
+    // Fallback: carregar uma vez
+    loadScriptsFallback();
+  });
+}
+
+// Fallback caso onSnapshot falhe
+function loadScriptsFallback() {
+  var grid = document.getElementById('scriptsGrid');
+  db.collection('scripts').orderBy('createdAt', 'desc').limit(200).get()
+    .then(function(snapshot) {
+      allScripts = [];
+      snapshot.forEach(function(doc) {
+        var data = doc.data();
+        data.id = doc.id;
+        allScripts.push(data);
+      });
+      updateStats();
+      renderScripts();
+    })
+    .catch(function(err) {
+      grid.innerHTML =
+        '<div class="empty-state">' +
+          '<i class="fa-solid fa-triangle-exclamation"></i>' +
+          '<h3>Erro ao conectar</h3>' +
+          '<p>' + err.message + '</p>' +
+          '<p style="margin-top:10px;color:var(--accent);font-size:.8rem">' +
+            'Verifique se o Firestore está ativado no Firebase Console' +
+          '</p>' +
+        '</div>';
+    });
+}
+
+// ══════════════════════════════════════════
+//  SCRIPTS — ATUALIZAR ESTATÍSTICAS
+// ══════════════════════════════════════════
+function updateStats() {
+  var totalLikes = 0;
+  var totalViews = 0;
+  allScripts.forEach(function(s) {
+    totalLikes += s.likes || 0;
+    totalViews += s.views || 0;
+  });
+  document.getElementById('totalScripts').textContent = allScripts.length;
+  document.getElementById('totalLikes').textContent = totalLikes;
+  document.getElementById('totalViews').textContent = totalViews;
+}
+
+// ══════════════════════════════════════════
+//  SCRIPTS — RENDERIZAR CARDS
+// ══════════════════════════════════════════
+function renderScripts() {
+  var grid = document.getElementById('scriptsGrid');
+  var list = allScripts.slice();
+
+  // Filtro "Meus Scripts"
+  if (currentFilter === 'mine' && currentUser) {
+    list = list.filter(function(s) {
+      return s.authorId === currentUser.uid;
+    });
+  }
+
+  // Busca
+  if (searchQuery) {
+    var q = searchQuery.toLowerCase();
+    list = list.filter(function(s) {
+      return (s.title || '').toLowerCase().indexOf(q) !== -1 ||
+             (s.description || '').toLowerCase().indexOf(q) !== -1 ||
+             (s.author || '').toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  if (list.length === 0) {
+    grid.innerHTML =
+      '<div class="empty-state">' +
+        '<i class="fa-solid fa-folder-open"></i>' +
+        '<h3>Nenhum script encontrado</h3>' +
+        '<p>' + (searchQuery ? 'Tente outra busca.' : 'Seja o primeiro a publicar um script!') + '</p>' +
+      '</div>';
+    return;
+  }
+
+  var html = '';
+  list.forEach(function(s, i) {
+    var date = s.createdAt ? formatDate(s.createdAt) : 'Agora';
+    var liked = currentUser && s.likedBy && s.likedBy.indexOf(currentUser.uid) !== -1;
+    var isOwner = currentUser && s.authorId === currentUser.uid;
+    var codePreview = escapeHtml((s.code || '').substring(0, 160));
+    var sid = s.id;
+
+    html +=
+      '<div class="script-card" style="animation-delay:' + (i * 0.05) + 's">' +
+        '<div class="card-header">' +
+          '<div class="card-title">' + escapeHtml(s.title) + '</div>' +
+          '<div class="card-badge">LUA</div>' +
+        '</div>' +
+        '<div class="card-desc">' + escapeHtml(s.description) + '</div>' +
+        '<div class="card-code">' + codePreview + '</div>' +
+        '<div class="card-meta">' +
+          '<div>' +
+            '<span class="card-author"><i class="fa-solid fa-user"></i> ' + escapeHtml(s.author) + '</span>' +
+            '<span class="card-date" style="margin-left:12px"><i class="fa-regular fa-calendar"></i> ' + date + '</span>' +
+          '</div>' +
+          '<div class="card-stats">' +
+            '<span><i class="fa-solid fa-eye"></i> ' + (s.views || 0) + '</span>' +
+            '<span><i class="fa-solid fa-heart"></i> ' + (s.likes || 0) + '</span>' +
+          '</div>' +
+        '</div>' +
+        '<div class="card-actions">' +
+          '<button class="action-btn btn-copy" onclick="copyScript(\'' + sid + '\')">' +
+            '<i class="fa-regular fa-copy"></i> Copiar</button>' +
+          '<button class="action-btn btn-view" onclick="viewScript(\'' + sid + '\')">' +
+            '<i class="fa-solid fa-expand"></i> Ver</button>' +
+          '<button class="action-btn btn-like ' + (liked ? 'liked' : '') + '" onclick="toggleLike(\'' + sid + '\')">' +
+            '<i class="fa-solid fa-heart"></i> ' + (s.likes || 0) + '</button>' +
+          (isOwner ?
+            '<button class="action-btn btn-delete" onclick="deleteScript(\'' + sid + '\')" title="Deletar">' +
+              '<i class="fa-solid fa-trash"></i></button>' : '') +
+        '</div>' +
+      '</div>';
+  });
+
+  grid.innerHTML = html;
+}
+
+// ══════════════════════════════════════════
+//  SCRIPTS — PUBLICAR NOVO SCRIPT
+// ══════════════════════════════════════════
+function handlePost(e) {
+  e.preventDefault();
+
+  if (!currentUser) {
+    toast('Você precisa fazer login para postar!', 'error');
+    closeModal('postModal');
+    openModal('authModal');
+    return;
+  }
+
+  var btn = document.getElementById('postBtn');
+  var title = document.getElementById('postTitle').value.trim();
+  var desc = document.getElementById('postDesc').value.trim();
+  var code = document.getElementById('postCode').value;
+
+  if (!title || !desc || !code) {
+    toast('Preencha todos os campos!', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publicando...';
+
+  // Salvar no Firestore (banco de dados online)
+  db.collection('scripts').add({
+    title: title,
+    description: desc,
+    code: code,
+    author: currentUsername,
+    authorId: currentUser.uid,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    views: 0,
+    likes: 0,
+    likedBy: []
+  })
+  .then(function(docRef) {
+    toast('Script publicado com sucesso! ID: ' + docRef.id, 'success');
+    closeModal('postModal');
+    document.getElementById('postForm').reset();
+    // O listener em tempo real (onSnapshot) vai atualizar a lista automaticamente!
+  })
+  .catch(function(err) {
+    console.error('Erro ao publicar:', err);
+    toast('Erro ao publicar: ' + err.message, 'error');
+  })
+  .finally(function() {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Publicar Script';
+  });
+}
+
+// ══════════════════════════════════════════
+//  SCRIPTS — COPIAR
+// ══════════════════════════════════════════
+function copyScript(id) {
+  var script = findScript(id);
+  if (!script) return;
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(script.code).then(function() {
+      toast('Script copiado para a área de transferência!', 'success');
+    }).catch(function() {
+      fallbackCopy(script.code);
+    });
+  } else {
+    fallbackCopy(script.code);
+  }
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  ta.style.position = 'fixed';
+  ta.style.opacity = '0';
+  document.body.appendChild(ta);
+  ta.select();
+  document.execCommand('copy');
+  document.body.removeChild(ta);
+  toast('Script copiado!', 'success');
+}
+
+// ══════════════════════════════════════════
+//  SCRIPTS — VER DETALHES
+// ══════════════════════════════════════════
+function viewScript(id) {
+  var script = findScript(id);
+  if (!script) return;
+
+  // Incrementar visualização no banco
+  db.collection('scripts').doc(id).update({
+    views: firebase.firestore.FieldValue.increment(1)
+  }).catch(function() { /* ok */ });
+
+  var date = script.createdAt ? formatDate(script.createdAt) : 'Agora';
+  var liked = currentUser && script.likedBy && script.likedBy.indexOf(currentUser.uid) !== -1;
+
+  document.getElementById('viewBody').innerHTML =
+    '<div class="view-title">' + escapeHtml(script.title) + '</div>' +
+    '<div class="view-meta">' +
+      '<span><i class="fa-solid fa-user" style="color:var(--accent3)"></i> ' + escapeHtml(script.author) + '</span>' +
+      '<span><i class="fa-regular fa-calendar"></i> ' + date + '</span>' +
+      '<span><i class="fa-solid fa-eye" style="color:var(--accent2)"></i> ' + ((script.views || 0) + 1) + ' views</span>' +
+      '<span><i class="fa-solid fa-heart" style="color:var(--danger)"></i> ' + (script.likes || 0) + ' likes</span>' +
+    '</div>' +
+    '<div class="view-desc">' + escapeHtml(script.description) + '</div>' +
+    '<div class="view-code-header">' +
+      '<span><i class="fa-solid fa-code"></i> Código Lua</span>' +
+      '<button class="action-btn btn-copy" onclick="copyScript(\'' + id + '\')" ' +
+        'style="flex:unset;padding:6px 14px;font-size:.8rem">' +
+        '<i class="fa-regular fa-copy"></i> Copiar</button>' +
+    '</div>' +
+    '<div class="view-code-block">' + escapeHtml(script.code) + '</div>' +
+    '<div class="view-actions">' +
+      '<button class="action-btn btn-like ' + (liked ? 'liked' : '') + '" ' +
+        'onclick="toggleLike(\'' + id + '\');closeModal(\'viewModal\')">' +
+        '<i class="fa-solid fa-heart"></i> ' + (liked ? 'Descurtir' : 'Curtir') +
+        ' (' + (script.likes || 0) + ')</button>' +
+      '<button class="action-btn btn-copy" onclick="copyScript(\'' + id + '\')">' +
+        '<i class="fa-regular fa-copy"></i> Copiar Script</button>' +
+    '</div>';
+
+  openModal('viewModal');
+}
+
+// ══════════════════════════════════════════
+//  SCRIPTS — CURTIR / DESCURTIR
+// ══════════════════════════════════════════
+function toggleLike(id) {
+  if (!currentUser) {
+    toast('Faça login para curtir!', 'error');
+    return;
+  }
+
+  var script = findScript(id);
+  if (!script) return;
+
+  var likedBy = script.likedBy || [];
+  var hasLiked = likedBy.indexOf(currentUser.uid) !== -1;
+
+  if (hasLiked) {
+    // Descurtir
+    db.collection('scripts').doc(id).update({
+      likes: firebase.firestore.FieldValue.increment(-1),
+      likedBy: firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
+    }).then(function() {
+      toast('Curtida removida.', 'info');
+    }).catch(function() {
+      toast('Erro ao descurtir.', 'error');
+    });
+  } else {
+    // Curtir
+    db.collection('scripts').doc(id).update({
+      likes: firebase.firestore.FieldValue.increment(1),
+      likedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+    }).then(function() {
+      toast('Script curtido! ❤️', 'success');
+    }).catch(function() {
+      toast('Erro ao curtir.', 'error');
+    });
+  }
+  // O onSnapshot vai atualizar automaticamente!
+}
+
+// ══════════════════════════════════════════
+//  SCRIPTS — DELETAR
+// ══════════════════════════════════════════
+function deleteScript(id) {
+  if (!currentUser) return;
+
+  var script = findScript(id);
+  if (!script) return;
+
+  if (script.authorId !== currentUser.uid) {
+    toast('Você só pode deletar seus próprios scripts!', 'error');
+    return;
+  }
+
+  if (!confirm('Tem certeza que quer deletar "' + script.title + '"?')) return;
+
+  db.collection('scripts').doc(id).delete()
+    .then(function() {
+      toast('Script deletado com sucesso.', 'info');
+      // O onSnapshot vai atualizar automaticamente!
+    })
+    .catch(function(err) {
+      toast('Erro ao deletar: ' + err.message, 'error');
+    });
+}
+
+// ══════════════════════════════════════════
+//  FILTROS & BUSCA
+// ══════════════════════════════════════════
+function setFilter(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.filter === filter);
+  });
+
+  // Para filtros que mudam a query do Firestore,
+  // precisamos reiniciar o listener
+  if (filter === 'mine') {
+    // "Meus scripts" é filtro local, só re-renderizar
+    renderScripts();
+  } else {
+    startRealtimeListener();
+  }
+}
+
+function resetFilters() {
+  searchQuery = '';
+  document.getElementById('searchInput').value = '';
+  setFilter('recent');
+}
+
+function handleSearch() {
+  searchQuery = document.getElementById('searchInput').value.trim();
+  renderScripts();
+}
+
+// ══════════════════════════════════════════
+//  MODALS
+// ══════════════════════════════════════════
+function openModal(id) {
+  var el = document.getElementById(id);
+  el.style.display = 'flex';
+  requestAnimationFrame(function() {
+    el.classList.add('active');
+  });
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  var el = document.getElementById(id);
+  el.classList.remove('active');
+  setTimeout(function() {
+    el.style.display = 'none';
+  }, 300);
+  document.body.style.overflow = '';
+}
+
+// Fechar ao clicar fora
+document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+
+// Fechar com ESC
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    ['viewModal', 'postModal', 'authModal'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el.classList.contains('active')) closeModal(id);
+    });
+  }
+});
+
+// ══════════════════════════════════════════
+//  TOAST NOTIFICATIONS
+// ══════════════════════════════════════════
+function toast(msg, type) {
+  type = type || 'info';
+  var container = document.getElementById('toastContainer');
+  var icons = {
+    success: 'fa-circle-check',
+    error: 'fa-circle-xmark',
+    info: 'fa-circle-info'
+  };
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = '<i class="fa-solid ' + (icons[type] || icons.info) + '"></i> ' + escapeHtml(msg);
+  container.appendChild(el);
+
+  setTimeout(function() {
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(60px)';
+    el.style.transition = '.3s';
+  }, 3500);
+
+  setTimeout(function() {
+    if (el.parentNode) el.remove();
+  }, 3800);
+}
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+function escapeHtml(str) {
+  if (!str) return '';
+  var d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function formatDate(ts) {
+  if (!ts) return 'Agora';
+  try {
+    var d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+  } catch(e) {
+    return 'Agora';
+  }
+}
+
+function findScript(id) {
+  for (var i = 0; i < allScripts.length; i++) {
+    if (allScripts[i].id === id) return allScripts[i];
+  }
+  return null;
+}
+
+// Navbar efeito scroll
+window.addEventListener('scroll', function() {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+});
+</script>
 </body>
 </html>
