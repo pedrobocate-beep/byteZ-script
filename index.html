@@ -1,2200 +1,1082 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ByteZ Scripts</title>
-
-    <!-- Firebase SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <style>
-        /* ============ RESET & BASE ============ */
-        *, *::before, *::after {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        :root {
-            --bg-primary: #0a0a0f;
-            --bg-secondary: #12121a;
-            --bg-tertiary: #1a1a2e;
-            --bg-card: #16162a;
-            --bg-card-hover: #1e1e3a;
-            --bg-input: #0f0f1a;
-            --border: #2a2a4a;
-            --border-hover: #4a4a7a;
-            --accent: #7c3aed;
-            --accent-hover: #8b5cf6;
-            --accent-glow: rgba(124, 58, 237, 0.3);
-            --accent-soft: rgba(124, 58, 237, 0.1);
-            --green: #10b981;
-            --green-glow: rgba(16, 185, 129, 0.3);
-            --red: #ef4444;
-            --red-glow: rgba(239, 68, 68, 0.3);
-            --orange: #f59e0b;
-            --orange-soft: rgba(245, 158, 11, 0.1);
-            --orange-border: rgba(245, 158, 11, 0.3);
-            --cyan: #06b6d4;
-            --cyan-glow: rgba(6, 182, 212, 0.3);
-            --text-primary: #e2e8f0;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
-            --radius: 12px;
-            --radius-sm: 8px;
-            --radius-lg: 16px;
-            --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
-            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.6);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg-primary);
-            color: var(--text-primary);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* ============ ANIMATED BACKGROUND ============ */
-        .bg-animation {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .bg-animation .orb {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.15;
-            animation: float 20s infinite ease-in-out;
-        }
-
-        .bg-animation .orb:nth-child(1) {
-            width: 600px;
-            height: 600px;
-            background: var(--accent);
-            top: -200px;
-            left: -200px;
-        }
-
-        .bg-animation .orb:nth-child(2) {
-            width: 400px;
-            height: 400px;
-            background: var(--cyan);
-            bottom: -100px;
-            right: -100px;
-            animation-delay: -7s;
-        }
-
-        .bg-animation .orb:nth-child(3) {
-            width: 300px;
-            height: 300px;
-            background: var(--green);
-            top: 50%;
-            left: 50%;
-            animation-delay: -14s;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            25% { transform: translate(100px, -50px) scale(1.1); }
-            50% { transform: translate(-50px, 100px) scale(0.9); }
-            75% { transform: translate(80px, 50px) scale(1.05); }
-        }
-
-        /* ============ SCROLLBAR ============ */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: var(--bg-primary);
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 3px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--accent);
-        }
-
-        /* ============ UTILITIES ============ */
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 24px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        /* ============ DISCLAIMER MODAL ============ */
-        .disclaimer-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(12px);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            opacity: 0;
-            animation: fadeInDisclaimer 0.5s ease forwards;
-        }
-
-        @keyframes fadeInDisclaimer {
-            to { opacity: 1; }
-        }
-
-        .disclaimer-overlay.closing {
-            animation: fadeOutDisclaimer 0.4s ease forwards;
-        }
-
-        @keyframes fadeOutDisclaimer {
-            to { opacity: 0; pointer-events: none; }
-        }
-
-        .disclaimer-modal {
-            background: var(--bg-secondary);
-            border: 1px solid var(--orange-border);
-            border-radius: var(--radius-lg);
-            width: 100%;
-            max-width: 520px;
-            box-shadow: 0 0 60px rgba(245, 158, 11, 0.1), var(--shadow-lg);
-            transform: scale(0.9) translateY(20px);
-            animation: popIn 0.5s ease 0.1s forwards;
-            opacity: 0;
-            overflow: hidden;
-        }
-
-        @keyframes popIn {
-            to {
-                transform: scale(1) translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .disclaimer-modal .disclaimer-icon-bar {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(239, 68, 68, 0.1));
-            padding: 28px;
-            text-align: center;
-            border-bottom: 1px solid var(--orange-border);
-        }
-
-        .disclaimer-modal .disclaimer-icon-bar .icon-circle {
-            width: 72px;
-            height: 72px;
-            background: var(--orange-soft);
-            border: 2px solid var(--orange-border);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 14px;
-            font-size: 34px;
-            animation: pulseWarn 2s infinite;
-        }
-
-        @keyframes pulseWarn {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3); }
-            50% { box-shadow: 0 0 20px 8px rgba(245, 158, 11, 0.15); }
-        }
-
-        .disclaimer-modal .disclaimer-icon-bar h2 {
-            font-size: 24px;
-            font-weight: 800;
-            color: var(--orange);
-        }
-
-        .disclaimer-modal .disclaimer-icon-bar .subtitle {
-            color: var(--text-secondary);
-            font-size: 14px;
-            margin-top: 4px;
-        }
-
-        .disclaimer-body {
-            padding: 28px;
-        }
-
-        .disclaimer-body .warn-list {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-            margin-bottom: 24px;
-        }
-
-        .disclaimer-body .warn-list li {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            font-size: 14px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-        }
-
-        .disclaimer-body .warn-list li .warn-icon {
-            flex-shrink: 0;
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            margin-top: 1px;
-        }
-
-        .warn-icon.yellow {
-            background: var(--orange-soft);
-            color: var(--orange);
-        }
-
-        .warn-icon.red {
-            background: rgba(239, 68, 68, 0.1);
-            color: var(--red);
-        }
-
-        .warn-icon.blue {
-            background: rgba(6, 182, 212, 0.1);
-            color: var(--cyan);
-        }
-
-        .warn-icon.purple {
-            background: var(--accent-soft);
-            color: var(--accent);
-        }
-
-        .disclaimer-body .warn-box {
-            background: rgba(239, 68, 68, 0.08);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            border-radius: var(--radius-sm);
-            padding: 14px 16px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .disclaimer-body .warn-box .warn-box-icon {
-            font-size: 18px;
-            flex-shrink: 0;
-            margin-top: 1px;
-        }
-
-        .disclaimer-body .warn-box p {
-            font-size: 13px;
-            color: var(--red);
-            line-height: 1.6;
-            font-weight: 500;
-        }
-
-        .disclaimer-checkbox {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            cursor: pointer;
-        }
-
-        .disclaimer-checkbox input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            accent-color: var(--orange);
-            cursor: pointer;
-            flex-shrink: 0;
-        }
-
-        .disclaimer-checkbox label {
-            font-size: 14px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .disclaimer-checkbox label strong {
-            color: var(--text-primary);
-        }
-
-        .btn-accept {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-family: 'Inter', sans-serif;
-            font-size: 15px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            background: linear-gradient(135deg, var(--orange), #e67e22);
-            color: white;
-            box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
-            opacity: 0.5;
-            pointer-events: none;
-        }
-
-        .btn-accept.enabled {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .btn-accept.enabled:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px rgba(245, 158, 11, 0.4);
-        }
-
-        .btn-accept.enabled:active {
-            transform: translateY(0);
-        }
-
-        /* ============ WARNING BANNER ============ */
-        .warning-banner {
-            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(239, 68, 68, 0.05));
-            border-bottom: 1px solid var(--orange-border);
-            padding: 10px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            position: relative;
-            z-index: 99;
-        }
-
-        .warning-banner .banner-icon {
-            font-size: 16px;
-            flex-shrink: 0;
-        }
-
-        .warning-banner p {
-            font-size: 13px;
-            color: var(--orange);
-            font-weight: 500;
-        }
-
-        .warning-banner p a {
-            color: var(--text-primary);
-            text-decoration: underline;
-            text-decoration-color: var(--orange-border);
-            text-underline-offset: 2px;
-        }
-
-        .warning-banner .banner-close {
-            position: absolute;
-            right: 16px;
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            font-size: 18px;
-            padding: 4px;
-            transition: var(--transition);
-        }
-
-        .warning-banner .banner-close:hover {
-            color: var(--text-primary);
-        }
-
-        /* ============ AUTH PAGE ============ */
-        #auth-page {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .auth-container {
-            width: 100%;
-            max-width: 460px;
-            position: relative;
-            z-index: 1;
-        }
-
-        .auth-logo {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .auth-logo .logo-icon {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, var(--accent), var(--cyan));
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            font-size: 32px;
-            font-weight: 900;
-            color: white;
-            box-shadow: 0 0 40px var(--accent-glow);
-        }
-
-        .auth-logo h1 {
-            font-size: 32px;
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--text-primary), var(--accent-hover));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .auth-logo p {
-            color: var(--text-secondary);
-            margin-top: 8px;
-            font-size: 15px;
-        }
-
-        .auth-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 40px;
-            box-shadow: var(--shadow-lg);
-            backdrop-filter: blur(20px);
-        }
-
-        .auth-tabs {
-            display: flex;
-            gap: 4px;
-            background: var(--bg-input);
-            border-radius: var(--radius);
-            padding: 4px;
-            margin-bottom: 32px;
-        }
-
-        .auth-tab {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            background: transparent;
-            color: var(--text-secondary);
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            font-weight: 600;
-            border-radius: var(--radius-sm);
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .auth-tab.active {
-            background: var(--accent);
-            color: white;
-            box-shadow: 0 0 20px var(--accent-glow);
-        }
-
-        .auth-tab:hover:not(.active) {
-            color: var(--text-primary);
-            background: var(--bg-tertiary);
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 13px;
-            font-weight: 600;
-            color: var(--text-secondary);
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 14px 16px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            font-size: 15px;
-            transition: var(--transition);
-            outline: none;
-        }
-
-        .form-input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-soft);
-        }
-
-        .form-input::placeholder {
-            color: var(--text-muted);
-        }
-
-        .btn {
-            padding: 14px 28px;
-            border: none;
-            border-radius: var(--radius-sm);
-            font-family: 'Inter', sans-serif;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-
-        .btn-primary {
-            width: 100%;
-            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
-            color: white;
-            box-shadow: 0 4px 20px var(--accent-glow);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 30px var(--accent-glow);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
-        }
-
-        .btn-small {
-            padding: 8px 16px;
-            font-size: 13px;
-        }
-
-        .auth-error {
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: var(--red);
-            padding: 12px 16px;
-            border-radius: var(--radius-sm);
-            font-size: 13px;
-            margin-bottom: 20px;
-            display: none;
-        }
-
-        .auth-error.show {
-            display: block;
-            animation: shake 0.5s ease;
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        /* ============ MAIN APP ============ */
-        #app-page {
-            min-height: 100vh;
-        }
-
-        /* ============ NAVBAR ============ */
-        .navbar {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(10, 10, 15, 0.8);
-            backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            padding: 0 24px;
-        }
-
-        .navbar-inner {
-            max-width: 1200px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            height: 64px;
-        }
-
-        .navbar-brand {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            text-decoration: none;
-        }
-
-        .navbar-brand .brand-icon {
-            width: 38px;
-            height: 38px;
-            background: linear-gradient(135deg, var(--accent), var(--cyan));
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 900;
-            font-size: 16px;
-            color: white;
-        }
-
-        .navbar-brand .brand-text {
-            font-size: 20px;
-            font-weight: 800;
-            color: var(--text-primary);
-        }
-
-        .navbar-brand .brand-text span {
-            color: var(--accent);
-        }
-
-        .navbar-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .navbar-user {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 6px 14px;
-            background: var(--bg-tertiary);
-            border-radius: var(--radius-sm);
-            border: 1px solid var(--border);
-        }
-
-        .navbar-user .user-avatar {
-            width: 30px;
-            height: 30px;
-            background: linear-gradient(135deg, var(--accent), var(--cyan));
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 13px;
-            color: white;
-        }
-
-        .navbar-user .user-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--text-primary);
-        }
-
-        .btn-icon {
-            width: 40px;
-            height: 40px;
-            border: 1px solid var(--border);
-            background: var(--bg-tertiary);
-            border-radius: var(--radius-sm);
-            color: var(--text-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-        }
-
-        .btn-icon:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: var(--accent-soft);
-        }
-
-        /* ============ HERO ============ */
-        .hero {
-            padding: 60px 0 40px;
-            text-align: center;
-        }
-
-        .hero h2 {
-            font-size: 40px;
-            font-weight: 900;
-            margin-bottom: 12px;
-            line-height: 1.1;
-        }
-
-        .hero h2 .gradient {
-            background: linear-gradient(135deg, var(--accent), var(--cyan));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .hero p {
-            color: var(--text-secondary);
-            font-size: 17px;
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
-        /* ============ STATS ============ */
-        .stats-bar {
-            display: flex;
-            gap: 16px;
-            justify-content: center;
-            margin: 32px 0 40px;
-            flex-wrap: wrap;
-        }
-
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 20px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-        }
-
-        .stat-item .stat-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .stat-item .stat-icon.purple {
-            background: var(--accent-soft);
-            color: var(--accent);
-        }
-
-        .stat-item .stat-icon.green {
-            background: rgba(16, 185, 129, 0.1);
-            color: var(--green);
-        }
-
-        .stat-item .stat-icon.cyan {
-            background: rgba(6, 182, 212, 0.1);
-            color: var(--cyan);
-        }
-
-        .stat-item .stat-info .stat-value {
-            font-size: 20px;
-            font-weight: 800;
-        }
-
-        .stat-item .stat-info .stat-label {
-            font-size: 12px;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* ============ TOOLBAR ============ */
-        .toolbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            margin-bottom: 24px;
-            flex-wrap: wrap;
-        }
-
-        .search-box {
-            flex: 1;
-            min-width: 250px;
-            position: relative;
-        }
-
-        .search-box input {
-            width: 100%;
-            padding: 12px 16px 12px 44px;
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            transition: var(--transition);
-            outline: none;
-        }
-
-        .search-box input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-soft);
-        }
-
-        .search-box .search-icon {
-            position: absolute;
-            left: 14px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: var(--text-muted);
-        }
-
-        .filter-group {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            padding: 10px 18px;
-            border: 1px solid var(--border);
-            background: var(--bg-secondary);
-            border-radius: var(--radius-sm);
-            color: var(--text-secondary);
-            font-family: 'Inter', sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: var(--transition);
-        }
-
-        .filter-btn.active,
-        .filter-btn:hover {
-            border-color: var(--accent);
-            color: var(--accent);
-            background: var(--accent-soft);
-        }
-
-        /* ============ SCRIPTS GRID ============ */
-        .scripts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
-            gap: 20px;
-            padding-bottom: 60px;
-        }
-
-        .script-card {
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            overflow: hidden;
-            transition: var(--transition);
-        }
-
-        .script-card:hover {
-            border-color: var(--accent);
-            transform: translateY(-4px);
-            box-shadow: 0 8px 30px rgba(124, 58, 237, 0.15);
-        }
-
-        .script-card-header {
-            padding: 20px 20px 12px;
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 12px;
-        }
-
-        .script-game-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 4px 12px;
-            background: var(--accent-soft);
-            color: var(--accent-hover);
-            border-radius: 20px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .script-card-body {
-            padding: 0 20px 16px;
-        }
-
-        .script-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        /* ✅ CORRIGIDO - line-clamp padrão adicionado */
-        .script-description {
-            font-size: 14px;
-            color: var(--text-secondary);
-            line-height: 1.5;
-            margin-bottom: 16px;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-
-        .script-code-preview {
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            padding: 14px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            color: var(--green);
-            overflow-x: auto;
-            white-space: nowrap;
-            margin-bottom: 16px;
-            cursor: pointer;
-        }
-
-        .script-card-footer {
-            padding: 14px 20px;
-            border-top: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .script-author {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .script-author .author-avatar {
-            width: 28px;
-            height: 28px;
-            background: linear-gradient(135deg, var(--accent), var(--cyan));
-            border-radius: 7px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            font-weight: 700;
-            color: white;
-        }
-
-        .script-author .author-info .author-name {
-            font-size: 13px;
-            font-weight: 600;
-        }
-
-        .script-author .author-info .author-date {
-            font-size: 11px;
-            color: var(--text-muted);
-        }
-
-        .script-actions {
-            display: flex;
-            gap: 6px;
-        }
-
-        .script-actions .action-btn {
-            width: 36px;
-            height: 36px;
-            border: 1px solid var(--border);
-            background: var(--bg-tertiary);
-            border-radius: 8px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-            position: relative;
-        }
-
-        .script-actions .action-btn:hover {
-            border-color: var(--green);
-            color: var(--green);
-            background: rgba(16, 185, 129, 0.1);
-        }
-
-        .action-btn.delete-btn:hover {
-            border-color: var(--red) !important;
-            color: var(--red) !important;
-            background: rgba(239, 68, 68, 0.1) !important;
-        }
-
-        .copy-tooltip {
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--green);
-            color: white;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 600;
-            white-space: nowrap;
-            pointer-events: none;
-            opacity: 0;
-            transition: all 0.3s;
-            margin-bottom: 6px;
-        }
-
-        .copy-tooltip.show {
-            opacity: 1;
-        }
-
-        /* ============ MODAL ============ */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(8px);
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            opacity: 0;
-            pointer-events: none;
-            transition: var(--transition);
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .modal {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            width: 100%;
-            max-width: 580px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow-lg);
-            transform: scale(0.9) translateY(20px);
-            transition: var(--transition);
-        }
-
-        .modal-overlay.active .modal {
-            transform: scale(1) translateY(0);
-        }
-
-        .modal-header {
-            padding: 24px 28px 0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .modal-header h3 {
-            font-size: 22px;
-            font-weight: 800;
-        }
-
-        .modal-close {
-            width: 36px;
-            height: 36px;
-            border: 1px solid var(--border);
-            background: var(--bg-tertiary);
-            border-radius: 8px;
-            color: var(--text-secondary);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: var(--transition);
-        }
-
-        .modal-close:hover {
-            border-color: var(--red);
-            color: var(--red);
-        }
-
-        .modal-body {
-            padding: 24px 28px 28px;
-        }
-
-        .modal-body .form-group:last-of-type {
-            margin-bottom: 24px;
-        }
-
-        .form-textarea {
-            width: 100%;
-            padding: 14px 16px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            color: var(--text-primary);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            transition: var(--transition);
-            outline: none;
-            resize: vertical;
-            min-height: 120px;
-            line-height: 1.6;
-        }
-
-        .form-textarea:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-soft);
-        }
-
-        .form-select {
-            width: 100%;
-            padding: 14px 16px;
-            background: var(--bg-input);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
-            font-size: 15px;
-            transition: var(--transition);
-            outline: none;
-            appearance: none;
-            cursor: pointer;
-        }
-
-        .form-select:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px var(--accent-soft);
-        }
-
-        .form-select option {
-            background: var(--bg-secondary);
-            color: var(--text-primary);
-        }
-
-        .form-hint {
-            font-size: 12px;
-            color: var(--text-muted);
-            margin-top: 6px;
-        }
-
-        /* ============ EMPTY STATE ============ */
-        .empty-state {
-            text-align: center;
-            padding: 80px 20px;
-            grid-column: 1 / -1;
-        }
-
-        .empty-state .empty-icon {
-            width: 80px;
-            height: 80px;
-            background: var(--bg-tertiary);
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 20px;
-            color: var(--text-muted);
-        }
-
-        .empty-state h3 {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .empty-state p {
-            color: var(--text-secondary);
-            font-size: 15px;
-        }
-
-        /* ============ TOAST ============ */
-        .toast-container {
-            position: fixed;
-            bottom: 24px;
-            right: 24px;
-            z-index: 2000;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .toast {
-            padding: 14px 20px;
-            border-radius: var(--radius-sm);
-            font-size: 14px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: var(--shadow);
-            animation: slideIn 0.4s ease, slideOut 0.4s ease forwards;
-            animation-delay: 0s, 2.6s;
-            min-width: 280px;
-        }
-
-        .toast.success {
-            background: rgba(16, 185, 129, 0.15);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: var(--green);
-        }
-
-        .toast.error {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: var(--red);
-        }
-
-        .toast.info {
-            background: rgba(124, 58, 237, 0.15);
-            border: 1px solid rgba(124, 58, 237, 0.3);
-            color: var(--accent-hover);
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        @keyframes slideOut {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
-        }
-
-        /* ============ LOADING ============ */
-        .loading-spinner {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-
-        .page-loader {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: var(--bg-primary);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s;
-        }
-
-        .page-loader.fade-out {
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .loader-content {
-            text-align: center;
-        }
-
-        .loader-content .loader-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, var(--accent), var(--cyan));
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 16px;
-            font-size: 24px;
-            font-weight: 900;
-            color: white;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 var(--accent-glow); }
-            50% { transform: scale(1.05); box-shadow: 0 0 30px var(--accent-glow); }
-        }
-
-        .loader-content p {
-            color: var(--text-secondary);
-            font-size: 14px;
-        }
-
-        /* ============ RESPONSIVE ============ */
-        @media (max-width: 768px) {
-            .hero h2 {
-                font-size: 28px;
-            }
-
-            .scripts-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .stats-bar {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .toolbar {
-                flex-direction: column;
-            }
-
-            .search-box {
-                min-width: 100%;
-            }
-
-            .auth-card {
-                padding: 28px;
-            }
-
-            .navbar-user .user-name {
-                display: none;
-            }
-
-            .disclaimer-modal {
-                max-width: 95vw;
-            }
-
-            .disclaimer-body {
-                padding: 20px;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ByteZ Scripts – Hub de Scripts Lua</title>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+<!-- Icons & Fonts -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+/* ─── RESET & VARIABLES ─── */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#06060c;
+  --bg2:#0c0c16;
+  --bg3:#111122;
+  --card:rgba(255,255,255,.03);
+  --card-hover:rgba(255,255,255,.06);
+  --border:rgba(255,255,255,.06);
+  --border-hover:rgba(0,255,136,.25);
+  --accent:#00ff88;
+  --accent2:#00d4ff;
+  --accent3:#7c3aed;
+  --danger:#ff4466;
+  --text:#e0e0e8;
+  --text2:#8888aa;
+  --grad:linear-gradient(135deg,#00ff88,#00d4ff);
+  --grad2:linear-gradient(135deg,#7c3aed,#00d4ff);
+  --shadow:0 8px 32px rgba(0,0,0,.4);
+  --radius:12px;
+  --radius-sm:8px;
+  --font:'Inter',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+  --title:'Rajdhani',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--font);
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  background-image:
+    linear-gradient(rgba(0,255,136,.015) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,255,136,.015) 1px,transparent 1px);
+  background-size:60px 60px;
+}
+a{color:inherit;text-decoration:none}
+button{cursor:pointer;font-family:var(--font);border:none;outline:none}
+input,textarea{font-family:var(--font);outline:none}
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--bg2)}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px}
+
+/* ─── NAVBAR ─── */
+.navbar{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  background:rgba(6,6,12,.85);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;height:64px;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:.3s;
+}
+.navbar.scrolled{background:rgba(6,6,12,.95);box-shadow:0 4px 30px rgba(0,0,0,.5)}
+.nav-brand{
+  font-family:var(--title);font-size:1.6rem;font-weight:700;
+  background:var(--grad);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  display:flex;align-items:center;gap:8px;
+  user-select:none;
+}
+.nav-brand i{
+  -webkit-text-fill-color:var(--accent);font-size:1.3rem;
+  filter:drop-shadow(0 0 8px rgba(0,255,136,.4));
+}
+.nav-center{flex:1;max-width:420px;margin:0 24px}
+.search-box{
+  position:relative;width:100%;
+}
+.search-box input{
+  width:100%;padding:10px 16px 10px 40px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:50px;
+  color:var(--text);font-size:.9rem;transition:.3s;
+}
+.search-box input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,255,136,.1)}
+.search-box input::placeholder{color:var(--text2)}
+.search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2);font-size:.85rem}
+.nav-right{display:flex;align-items:center;gap:10px}
+.nav-btn{
+  padding:8px 18px;border-radius:50px;font-size:.85rem;font-weight:600;
+  transition:.3s;display:flex;align-items:center;gap:6px;
+}
+.nav-btn-outline{
+  background:transparent;border:1px solid var(--border);color:var(--text);
+}
+.nav-btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.nav-btn-primary{
+  background:var(--grad);color:#000;border:none;
+}
+.nav-btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,255,136,.3)}
+.user-area{display:flex;align-items:center;gap:12px}
+.user-avatar{
+  width:34px;height:34px;border-radius:50%;
+  background:var(--grad);display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:#000;font-size:.85rem;
+}
+.user-name{font-weight:600;font-size:.9rem;color:var(--accent)}
+.nav-btn-danger{
+  background:transparent;border:1px solid rgba(255,68,102,.3);color:var(--danger);
+}
+.nav-btn-danger:hover{background:rgba(255,68,102,.1);border-color:var(--danger)}
+
+/* ─── HERO ─── */
+.hero{
+  padding:120px 24px 40px;text-align:center;
+  position:relative;
+}
+.hero::after{
+  content:'';position:absolute;top:60px;left:50%;transform:translateX(-50%);
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(0,255,136,.06) 0%,transparent 70%);
+  pointer-events:none;
+}
+.hero h1{
+  font-family:var(--title);font-size:clamp(2.2rem,5vw,3.5rem);font-weight:700;
+  margin-bottom:12px;line-height:1.1;
+}
+.hero h1 span{
+  background:var(--grad);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.hero p{color:var(--text2);font-size:1.05rem;max-width:500px;margin:0 auto 30px}
+.stats-row{
+  display:flex;justify-content:center;gap:40px;flex-wrap:wrap;
+}
+.stat{text-align:center}
+.stat-num{
+  font-family:var(--title);font-size:2rem;font-weight:700;
+  background:var(--grad);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.stat-label{color:var(--text2);font-size:.8rem;text-transform:uppercase;letter-spacing:1px}
+
+/* ─── FILTERS ─── */
+.filters{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:10px 24px 20px;flex-wrap:wrap;
+}
+.filter-btn{
+  padding:8px 20px;border-radius:50px;font-size:.85rem;font-weight:500;
+  background:var(--bg3);border:1px solid var(--border);color:var(--text2);
+  transition:.3s;
+}
+.filter-btn:hover{color:var(--text);border-color:rgba(255,255,255,.15)}
+.filter-btn.active{
+  background:var(--grad);color:#000;border-color:transparent;font-weight:600;
+  box-shadow:0 4px 20px rgba(0,255,136,.2);
+}
+
+/* ─── SCRIPTS GRID ─── */
+.container{max-width:1200px;margin:0 auto;padding:0 24px 60px}
+.scripts-grid{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
+  gap:20px;
+}
+.script-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:24px;transition:.35s;position:relative;overflow:hidden;
+  animation:fadeUp .5s ease both;
+}
+.script-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--grad);opacity:0;transition:.35s;
+}
+.script-card:hover{
+  border-color:var(--border-hover);background:var(--card-hover);
+  transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.4);
+}
+.script-card:hover::before{opacity:1}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.card-title{
+  font-family:var(--title);font-size:1.25rem;font-weight:700;
+  color:var(--text);line-height:1.3;flex:1;margin-right:10px;
+}
+.card-badge{
+  padding:3px 10px;border-radius:50px;font-size:.7rem;font-weight:600;
+  background:rgba(0,255,136,.1);color:var(--accent);border:1px solid rgba(0,255,136,.2);
+  white-space:nowrap;
+}
+.card-desc{
+  color:var(--text2);font-size:.88rem;line-height:1.5;
+  margin-bottom:16px;
+  display:-webkit-box;
+  -webkit-line-clamp:2;
+  line-clamp:2;
+  -webkit-box-orient:vertical;
+  overflow:hidden;
+}
+.card-code{
+  background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:12px 14px;margin-bottom:16px;
+  font-family:var(--mono);font-size:.78rem;color:var(--accent);
+  max-height:80px;overflow:hidden;position:relative;
+  line-height:1.5;white-space:pre-wrap;word-break:break-all;
+}
+.card-code::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:30px;
+  background:linear-gradient(transparent,rgba(0,0,0,.6));
+}
+.card-meta{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;flex-wrap:wrap;gap:8px;
+}
+.card-author{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text2)}
+.card-author i{color:var(--accent3);font-size:.75rem}
+.card-date{font-size:.78rem;color:var(--text2)}
+.card-stats{display:flex;align-items:center;gap:14px;font-size:.8rem;color:var(--text2)}
+.card-stats span{display:flex;align-items:center;gap:4px}
+.card-stats i{font-size:.75rem}
+.card-actions{display:flex;gap:8px;flex-wrap:wrap}
+.action-btn{
+  flex:1;min-width:0;padding:10px 12px;border-radius:var(--radius-sm);
+  font-size:.82rem;font-weight:600;transition:.3s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-copy{background:rgba(0,255,136,.08);color:var(--accent);border:1px solid rgba(0,255,136,.15)}
+.btn-copy:hover{background:rgba(0,255,136,.15);border-color:rgba(0,255,136,.3)}
+.btn-view{background:rgba(0,212,255,.08);color:var(--accent2);border:1px solid rgba(0,212,255,.15)}
+.btn-view:hover{background:rgba(0,212,255,.15);border-color:rgba(0,212,255,.3)}
+.btn-like{background:rgba(124,58,237,.08);color:var(--accent3);border:1px solid rgba(124,58,237,.15)}
+.btn-like:hover{background:rgba(124,58,237,.15);border-color:rgba(124,58,237,.3)}
+.btn-like.liked{background:rgba(124,58,237,.2);border-color:rgba(124,58,237,.4);color:#a78bfa}
+.btn-delete{background:rgba(255,68,102,.08);color:var(--danger);border:1px solid rgba(255,68,102,.15)}
+.btn-delete:hover{background:rgba(255,68,102,.15);border-color:rgba(255,68,102,.3)}
+
+/* ─── EMPTY STATE ─── */
+.empty-state{
+  text-align:center;padding:80px 20px;
+  grid-column:1/-1;
+}
+.empty-state i{font-size:3rem;color:var(--text2);margin-bottom:16px;opacity:.4}
+.empty-state h3{font-family:var(--title);font-size:1.4rem;color:var(--text2);margin-bottom:8px}
+.empty-state p{color:var(--text2);font-size:.9rem;opacity:.7}
+
+/* ─── MODALS ─── */
+.modal-overlay{
+  position:fixed;top:0;left:0;right:0;bottom:0;z-index:2000;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;
+  padding:20px;opacity:0;transition:.3s;
+}
+.modal-overlay.active{display:flex;opacity:1}
+.modal{
+  background:var(--bg2);border:1px solid var(--border);border-radius:16px;
+  width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
+  box-shadow:0 24px 80px rgba(0,0,0,.6);
+  transform:scale(.95) translateY(20px);transition:.35s;
+}
+.modal-overlay.active .modal{transform:scale(1) translateY(0)}
+.modal-lg{max-width:720px}
+.modal-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:24px 28px 0;
+}
+.modal-header h2{
+  font-family:var(--title);font-size:1.5rem;font-weight:700;
+  background:var(--grad);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.modal-close{
+  width:36px;height:36px;border-radius:50%;
+  background:rgba(255,255,255,.05);color:var(--text2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;transition:.3s;
+}
+.modal-close:hover{background:rgba(255,68,102,.15);color:var(--danger)}
+.modal-body{padding:24px 28px 28px}
+
+/* ─── AUTH TABS ─── */
+.auth-tabs{display:flex;gap:0;margin-bottom:24px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border)}
+.auth-tab{
+  flex:1;padding:12px;text-align:center;font-weight:600;font-size:.9rem;
+  background:transparent;color:var(--text2);transition:.3s;
+}
+.auth-tab.active{background:var(--grad);color:#000}
+.auth-tab:hover:not(.active){background:rgba(255,255,255,.03)}
+
+/* ─── FORMS ─── */
+.form-group{margin-bottom:18px}
+.form-group label{
+  display:block;font-size:.85rem;font-weight:600;color:var(--text2);
+  margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;
+}
+.form-group input,.form-group textarea{
+  width:100%;padding:12px 16px;
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);
+  color:var(--text);font-size:.9rem;transition:.3s;
+}
+.form-group input:focus,.form-group textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,255,136,.08)}
+.form-group textarea{resize:vertical;min-height:100px;font-family:var(--mono);font-size:.85rem}
+.form-group textarea.code-input{min-height:200px;color:var(--accent);background:rgba(0,0,0,.3)}
+.submit-btn{
+  width:100%;padding:14px;border-radius:var(--radius-sm);
+  background:var(--grad);color:#000;font-size:1rem;font-weight:700;
+  transition:.3s;text-transform:uppercase;letter-spacing:1px;
+}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,255,136,.3)}
+.submit-btn:active{transform:translateY(0)}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* ─── VIEW SCRIPT MODAL ─── */
+.view-title{font-family:var(--title);font-size:1.6rem;font-weight:700;margin-bottom:6px}
+.view-meta{display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
+.view-meta span{font-size:.85rem;color:var(--text2);display:flex;align-items:center;gap:5px}
+.view-meta i{font-size:.8rem}
+.view-desc{color:var(--text2);font-size:.92rem;line-height:1.6;margin-bottom:20px}
+.view-code-block{
+  background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:var(--radius-sm);
+  padding:20px;font-family:var(--mono);font-size:.82rem;
+  color:var(--accent);line-height:1.6;
+  max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;
+  position:relative;
+}
+.view-code-header{
+  display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;
+}
+.view-code-header span{font-family:var(--title);font-size:.95rem;color:var(--text2);font-weight:600}
+.view-actions{display:flex;gap:10px;margin-top:20px}
+.view-actions .action-btn{flex:unset;padding:12px 24px}
+
+/* ─── TOAST ─── */
+.toast-container{
+  position:fixed;bottom:24px;right:24px;z-index:3000;
+  display:flex;flex-direction:column;gap:10px;
+}
+.toast{
+  padding:14px 22px;border-radius:var(--radius-sm);
+  background:var(--bg3);border:1px solid var(--border);
+  color:var(--text);font-size:.88rem;font-weight:500;
+  box-shadow:var(--shadow);
+  display:flex;align-items:center;gap:10px;
+  animation:slideIn .35s ease;min-width:280px;
+}
+.toast.success{border-color:rgba(0,255,136,.3)}
+.toast.success i{color:var(--accent)}
+.toast.error{border-color:rgba(255,68,102,.3)}
+.toast.error i{color:var(--danger)}
+.toast.info{border-color:rgba(0,212,255,.3)}
+.toast.info i{color:var(--accent2)}
+
+/* ─── LOADING ─── */
+.loader{
+  display:flex;justify-content:center;padding:60px;grid-column:1/-1;
+}
+.spinner{
+  width:40px;height:40px;border:3px solid var(--border);
+  border-top-color:var(--accent);border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@keyframes slideIn{
+  from{opacity:0;transform:translateX(60px)}
+  to{opacity:1;transform:translateX(0)}
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:768px){
+  .navbar{padding:0 14px;gap:8px}
+  .nav-center{max-width:none;margin:0 10px;flex:1}
+  .nav-right{gap:6px}
+  .nav-btn span.btn-text{display:none}
+  .nav-btn{padding:8px 12px}
+  .user-name{display:none}
+  .hero h1{font-size:1.8rem}
+  .scripts-grid{grid-template-columns:1fr}
+  .modal{margin:10px;max-height:95vh}
+  .stats-row{gap:20px}
+  .view-actions{flex-direction:column}
+  .view-actions .action-btn{flex:1}
+}
+@media(max-width:480px){
+  .hero{padding:100px 16px 30px}
+  .container{padding:0 12px 40px}
+  .script-card{padding:18px}
+  .card-actions{flex-direction:column}
+  .action-btn{flex:unset}
+}
+</style>
 </head>
-
 <body>
-    <!-- Background Animation -->
-    <div class="bg-animation">
-        <div class="orb"></div>
-        <div class="orb"></div>
-        <div class="orb"></div>
-    </div>
 
-    <!-- Page Loader -->
-    <div class="page-loader" id="pageLoader">
-        <div class="loader-content">
-            <div class="loader-icon">B</div>
-            <p>Carregando ByteZ...</p>
+<!-- ═══ NAVBAR ═══ -->
+<nav class="navbar" id="navbar">
+  <a href="#" class="nav-brand" onclick="resetFilters()">
+    <i class="fa-solid fa-terminal"></i>
+    ByteZ Scripts
+  </a>
+  <div class="nav-center">
+    <div class="search-box">
+      <i class="fa-solid fa-magnifying-glass"></i>
+      <input type="text" id="searchInput" placeholder="Buscar scripts..." oninput="handleSearch()">
+    </div>
+  </div>
+  <div class="nav-right" id="navRight"></div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <h1>Explore os melhores<br><span>Scripts Lua</span></h1>
+  <p>Encontre, compartilhe e copie scripts para seus projetos. Comunidade aberta para todos.</p>
+  <div class="stats-row">
+    <div class="stat">
+      <div class="stat-num" id="totalScripts">0</div>
+      <div class="stat-label">Scripts</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="totalLikes">0</div>
+      <div class="stat-label">Curtidas</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num" id="totalViews">0</div>
+      <div class="stat-label">Visualizações</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ FILTERS ═══ -->
+<div class="filters" id="filtersBar">
+  <button class="filter-btn active" data-filter="recent" onclick="setFilter('recent')">
+    <i class="fa-solid fa-clock"></i> Recentes
+  </button>
+  <button class="filter-btn" data-filter="popular" onclick="setFilter('popular')">
+    <i class="fa-solid fa-fire"></i> Populares
+  </button>
+  <button class="filter-btn" data-filter="most-viewed" onclick="setFilter('most-viewed')">
+    <i class="fa-solid fa-eye"></i> Mais Vistos
+  </button>
+  <button class="filter-btn" data-filter="mine" onclick="setFilter('mine')" id="filterMine" style="display:none">
+    <i class="fa-solid fa-user"></i> Meus Scripts
+  </button>
+</div>
+
+<!-- ═══ SCRIPTS GRID ═══ -->
+<div class="container">
+  <div class="scripts-grid" id="scriptsGrid">
+    <div class="loader"><div class="spinner"></div></div>
+  </div>
+</div>
+
+<!-- ═══ AUTH MODAL ═══ -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="authTitle">Entrar</h2>
+      <button class="modal-close" onclick="closeModal('authModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Login</button>
+        <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Cadastro</button>
+      </div>
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="seu@email.com" required>
         </div>
-    </div>
-
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
-
-    <!-- ==================== DISCLAIMER / AVISO ==================== -->
-    <div class="disclaimer-overlay" id="disclaimerOverlay">
-        <div class="disclaimer-modal">
-            <div class="disclaimer-icon-bar">
-                <div class="icon-circle">⚠️</div>
-                <h2>Aviso Importante</h2>
-                <p class="subtitle">Leia antes de continuar</p>
-            </div>
-            <div class="disclaimer-body">
-                <ul class="warn-list">
-                    <li>
-                        <div class="warn-icon yellow">⚡</div>
-                        <span>Os scripts compartilhados aqui são de <strong style="color: var(--text-primary);">responsabilidade dos seus autores</strong>. O ByteZ não se responsabiliza pelo conteúdo publicado.</span>
-                    </li>
-                    <li>
-                        <div class="warn-icon red">🛡️</div>
-                        <span>O uso de scripts em jogos pode violar os <strong style="color: var(--text-primary);">Termos de Serviço</strong> da plataforma. Usar exploits pode resultar em <strong style="color: var(--red);">banimento permanente</strong> da sua conta.</span>
-                    </li>
-                    <li>
-                        <div class="warn-icon blue">🔍</div>
-                        <span><strong style="color: var(--text-primary);">Sempre revise o código</strong> antes de executar. Scripts maliciosos podem roubar dados, comprometer sua segurança ou danificar seu sistema.</span>
-                    </li>
-                    <li>
-                        <div class="warn-icon purple">📚</div>
-                        <span>Este site é apenas uma <strong style="color: var(--text-primary);">plataforma de compartilhamento</strong> para fins educacionais e de aprendizado em Lua.</span>
-                    </li>
-                </ul>
-
-                <div class="warn-box">
-                    <span class="warn-box-icon">🚨</span>
-                    <p>Ao continuar, você reconhece que <strong>usa os scripts por sua conta e risco</strong>. O ByteZ e seus desenvolvedores não se responsabilizam por qualquer consequência decorrente do uso dos scripts aqui publicados.</p>
-                </div>
-
-                <div class="disclaimer-checkbox">
-                    <input type="checkbox" id="acceptCheckbox" onchange="toggleAcceptBtn()">
-                    <label for="acceptCheckbox">Li e <strong>concordo</strong> com os termos acima</label>
-                </div>
-
-                <button class="btn-accept" id="acceptBtn" onclick="acceptDisclaimer()">
-                    🚀 Entrar no ByteZ
-                </button>
-            </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="loginPassword" placeholder="••••••••" required minlength="6">
         </div>
-    </div>
-
-    <!-- ==================== AUTH PAGE ==================== -->
-    <div id="auth-page" class="hidden">
-        <div class="auth-container">
-            <div class="auth-logo">
-                <div class="logo-icon">B</div>
-                <h1>ByteZ Scripts</h1>
-                <p>Compartilhe e descubra os melhores scripts Lua</p>
-            </div>
-
-            <div class="auth-card">
-                <div class="auth-tabs">
-                    <button class="auth-tab active" onclick="switchAuthTab('login')">Entrar</button>
-                    <button class="auth-tab" onclick="switchAuthTab('register')">Criar Conta</button>
-                </div>
-
-                <div id="authError" class="auth-error"></div>
-
-                <!-- Login Form -->
-                <form id="loginForm" onsubmit="handleLogin(event)">
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" class="form-input" id="loginEmail" placeholder="seu@email.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Senha</label>
-                        <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary" id="loginBtn">Entrar</button>
-                </form>
-
-                <!-- Register Form -->
-                <form id="registerForm" class="hidden" onsubmit="handleRegister(event)">
-                    <div class="form-group">
-                        <label>Nome de Usuário</label>
-                        <input type="text" class="form-input" id="registerName" placeholder="Seu nome" required minlength="3" maxlength="20">
-                    </div>
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" class="form-input" id="registerEmail" placeholder="seu@email.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Senha</label>
-                        <input type="password" class="form-input" id="registerPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
-                    </div>
-                    <button type="submit" class="btn btn-primary" id="registerBtn">Criar Conta</button>
-                </form>
-            </div>
+        <button type="submit" class="submit-btn" id="loginBtn">
+          <i class="fa-solid fa-right-to-bracket"></i> Entrar
+        </button>
+      </form>
+      <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
+        <div class="form-group">
+          <label>Nome de Usuário</label>
+          <input type="text" id="regUsername" placeholder="ByteZMaster" required minlength="3" maxlength="20">
         </div>
-    </div>
-
-    <!-- ==================== APP PAGE ==================== -->
-    <div id="app-page" class="hidden">
-        <!-- Warning Banner -->
-        <div class="warning-banner" id="warningBanner">
-            <span class="banner-icon">⚠️</span>
-            <p><strong>Aviso:</strong> Use os scripts por sua conta e risco. Sempre revise o código antes de executar. <a href="#" onclick="showDisclaimerAgain(); return false;">Ler aviso completo</a></p>
-            <button class="banner-close" onclick="closeBanner()" title="Fechar">✕</button>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="regEmail" placeholder="seu@email.com" required>
         </div>
-
-        <!-- Navbar -->
-        <nav class="navbar">
-            <div class="navbar-inner">
-                <a href="#" class="navbar-brand">
-                    <div class="brand-icon">B</div>
-                    <div class="brand-text">Byte<span>Z</span></div>
-                </a>
-                <div class="navbar-actions">
-                    <div class="navbar-user">
-                        <div class="user-avatar" id="userAvatar">?</div>
-                        <span class="user-name" id="userName">User</span>
-                    </div>
-                    <button class="btn-icon" onclick="openNewScriptModal()" title="Novo Script">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    </button>
-                    <button class="btn-icon" onclick="handleLogout()" title="Sair">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-                    </button>
-                </div>
-            </div>
-        </nav>
-
-        <!-- Hero -->
-        <section class="hero">
-            <div class="container">
-                <h2>Explore os melhores <span class="gradient">Scripts Lua</span></h2>
-                <p>Compartilhe, descubra e copie scripts prontos para usar com loadstring</p>
-                <div class="stats-bar">
-                    <div class="stat-item">
-                        <div class="stat-icon purple">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="totalScripts">0</div>
-                            <div class="stat-label">Scripts</div>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-icon green">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="totalUsers">0</div>
-                            <div class="stat-label">Usuários</div>
-                        </div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-icon cyan">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                        </div>
-                        <div class="stat-info">
-                            <div class="stat-value" id="totalCopies">0</div>
-                            <div class="stat-label">Cópias</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Main Content -->
-        <main class="container">
-            <div class="toolbar">
-                <div class="search-box">
-                    <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-                    <input type="text" placeholder="Buscar scripts..." id="searchInput" oninput="filterScripts()">
-                </div>
-                <div class="filter-group">
-                    <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">Todos</button>
-                    <button class="filter-btn" data-filter="mine" onclick="setFilter('mine', this)">Meus Scripts</button>
-                </div>
-                <button class="btn btn-primary btn-small" onclick="openNewScriptModal()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-                    Novo Script
-                </button>
-            </div>
-            <div class="scripts-grid" id="scriptsGrid"></div>
-        </main>
-    </div>
-
-    <!-- ==================== NEW SCRIPT MODAL ==================== -->
-    <div class="modal-overlay" id="newScriptModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3>📝 Novo Script</h3>
-                <button class="modal-close" onclick="closeModal('newScriptModal')">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form onsubmit="handleNewScript(event)">
-                    <div class="form-group">
-                        <label>Título do Script</label>
-                        <input type="text" class="form-input" id="scriptTitle" placeholder="Ex: Infinite Yield" required maxlength="60">
-                    </div>
-                    <div class="form-group">
-                        <label>Jogo / Categoria</label>
-                        <select class="form-select" id="scriptGame" required>
-                            <option value="">Selecione...</option>
-                            <option value="Universal">Universal</option>
-                            <option value="Blox Fruits">Blox Fruits</option>
-                            <option value="Pet Simulator">Pet Simulator</option>
-                            <option value="King Legacy">King Legacy</option>
-                            <option value="Brookhaven">Brookhaven</option>
-                            <option value="Arsenal">Arsenal</option>
-                            <option value="Murder Mystery">Murder Mystery</option>
-                            <option value="Jailbreak">Jailbreak</option>
-                            <option value="Anime Adventures">Anime Adventures</option>
-                            <option value="Tower Defense">Tower Defense</option>
-                            <option value="Outro">Outro</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Descrição</label>
-                        <input type="text" class="form-input" id="scriptDescription" placeholder="Breve descrição do script" required maxlength="200">
-                    </div>
-                    <div class="form-group">
-                        <label>Script (Código Lua)</label>
-                        <textarea class="form-textarea" id="scriptCode" placeholder='loadstring(game:HttpGet("https://exemplo.com/script"))()' required></textarea>
-                        <p class="form-hint">Cole o loadstring ou o código Lua completo</p>
-                    </div>
-                    <button type="submit" class="btn btn-primary" id="submitScriptBtn">Publicar Script</button>
-                </form>
-            </div>
+        <div class="form-group">
+          <label>Senha</label>
+          <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
         </div>
+        <button type="submit" class="submit-btn" id="regBtn">
+          <i class="fa-solid fa-user-plus"></i> Criar Conta
+        </button>
+      </form>
     </div>
+  </div>
+</div>
 
-    <!-- ==================== VIEW SCRIPT MODAL ==================== -->
-    <div class="modal-overlay" id="viewScriptModal">
-        <div class="modal">
-            <div class="modal-header">
-                <h3 id="viewScriptTitle">Script</h3>
-                <button class="modal-close" onclick="closeModal('viewScriptModal')">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="form-group">
-                    <label>Jogo</label>
-                    <p id="viewScriptGame" style="color: var(--accent); font-weight: 600;"></p>
-                </div>
-                <div class="form-group">
-                    <label>Descrição</label>
-                    <p id="viewScriptDesc" style="color: var(--text-secondary); line-height: 1.6;"></p>
-                </div>
-                <div class="form-group">
-                    <label>Código</label>
-                    <textarea class="form-textarea" id="viewScriptCode" readonly style="min-height: 180px; cursor: text;"></textarea>
-                </div>
-                <button class="btn btn-primary" onclick="copyViewScript()">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                    Copiar Script
-                </button>
-            </div>
+<!-- ═══ POST SCRIPT MODAL ═══ -->
+<div class="modal-overlay" id="postModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-plus"></i> Novo Script</h2>
+      <button class="modal-close" onclick="closeModal('postModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="postForm" onsubmit="handlePost(event)">
+        <div class="form-group">
+          <label>Título</label>
+          <input type="text" id="postTitle" placeholder="Ex: Infinite Yield Script" required maxlength="80">
         </div>
+        <div class="form-group">
+          <label>Descrição</label>
+          <input type="text" id="postDesc" placeholder="Breve descrição do que o script faz" required maxlength="200">
+        </div>
+        <div class="form-group">
+          <label>Código Lua</label>
+          <textarea id="postCode" class="code-input" placeholder='loadstring(game:HttpGet("https://..."))()' required></textarea>
+        </div>
+        <button type="submit" class="submit-btn" id="postBtn">
+          <i class="fa-solid fa-paper-plane"></i> Publicar Script
+        </button>
+      </form>
     </div>
-
-    <!-- ==================== JAVASCRIPT ==================== -->
-    <script>
-        // ===== FIREBASE CONFIG =====
-        const firebaseConfig = {
-            apiKey: "AIzaSyDbmJbhYLofmkF99TwhF_skc_iAnwBTNPY",
-            authDomain: "bytez-script.firebaseapp.com",
-            projectId: "bytez-script",
-            storageBucket: "bytez-script.firebasestorage.app",
-            messagingSenderId: "716754895227",
-            appId: "1:716754895227:web:f661b3dbfd25df9b6bfdde"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-
-        // ===== STATE =====
-        let currentUser = null;
-        let currentUserData = null;
-        let allScripts = [];
-        let currentFilter = 'all';
-        let totalCopiesCount = 0;
-        let disclaimerAccepted = false;
-
-        // ===== DISCLAIMER FUNCTIONS =====
-        function checkDisclaimer() {
-            const accepted = localStorage.getItem('bytez_disclaimer_accepted');
-            if (accepted === 'true') {
-                disclaimerAccepted = true;
-                document.getElementById('disclaimerOverlay').style.display = 'none';
-            }
-        }
-
-        function toggleAcceptBtn() {
-            const checkbox = document.getElementById('acceptCheckbox');
-            const btn = document.getElementById('acceptBtn');
-            if (checkbox.checked) {
-                btn.classList.add('enabled');
-            } else {
-                btn.classList.remove('enabled');
-            }
-        }
-
-        function acceptDisclaimer() {
-            const checkbox = document.getElementById('acceptCheckbox');
-            if (!checkbox.checked) return;
-
-            disclaimerAccepted = true;
-            localStorage.setItem('bytez_disclaimer_accepted', 'true');
-
-            const overlay = document.getElementById('disclaimerOverlay');
-            overlay.classList.add('closing');
-
-            setTimeout(() => {
-                overlay.style.display = 'none';
-            }, 400);
-
-            showToast('Bem-vindo ao ByteZ Scripts! 🎉', 'success');
-        }
-
-        function showDisclaimerAgain() {
-            const overlay = document.getElementById('disclaimerOverlay');
-            overlay.style.display = 'flex';
-            overlay.classList.remove('closing');
-            document.getElementById('acceptCheckbox').checked = true;
-            document.getElementById('acceptBtn').classList.add('enabled');
-        }
-
-        function closeBanner() {
-            const banner = document.getElementById('warningBanner');
-            banner.style.transition = 'all 0.3s ease';
-            banner.style.opacity = '0';
-            banner.style.maxHeight = '0';
-            banner.style.padding = '0 24px';
-            banner.style.overflow = 'hidden';
-            setTimeout(() => banner.style.display = 'none', 300);
-        }
-
-        // Check disclaimer on load
-        checkDisclaimer();
-
-        // ===== AUTH STATE LISTENER =====
-        auth.onAuthStateChanged(async (user) => {
-            const loader = document.getElementById('pageLoader');
-
-            if (user) {
-                currentUser = user;
-                try {
-                    const doc = await db.collection('users').doc(user.uid).get();
-                    if (doc.exists) {
-                        currentUserData = doc.data();
-                    } else {
-                        currentUserData = { name: user.email.split('@')[0], email: user.email };
-                    }
-                } catch (e) {
-                    currentUserData = { name: user.email.split('@')[0], email: user.email };
-                }
-                showApp();
-                loadScripts();
-            } else {
-                currentUser = null;
-                currentUserData = null;
-                showAuth();
-            }
-
-            setTimeout(() => loader.classList.add('fade-out'), 500);
-        });
-
-        // ===== PAGE SWITCHING =====
-        function showAuth() {
-            document.getElementById('auth-page').classList.remove('hidden');
-            document.getElementById('app-page').classList.add('hidden');
-        }
-
-        function showApp() {
-            document.getElementById('auth-page').classList.add('hidden');
-            document.getElementById('app-page').classList.remove('hidden');
-
-            const name = currentUserData?.name || 'User';
-            document.getElementById('userName').textContent = name;
-            document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
-        }
-
-        // ===== AUTH TABS =====
-        function switchAuthTab(tab) {
-            const tabs = document.querySelectorAll('.auth-tab');
-            tabs.forEach(t => t.classList.remove('active'));
-
-            if (tab === 'login') {
-                tabs[0].classList.add('active');
-                document.getElementById('loginForm').classList.remove('hidden');
-                document.getElementById('registerForm').classList.add('hidden');
-            } else {
-                tabs[1].classList.add('active');
-                document.getElementById('loginForm').classList.add('hidden');
-                document.getElementById('registerForm').classList.remove('hidden');
-            }
-            hideAuthError();
-        }
-
-        function showAuthError(msg) {
-            const el = document.getElementById('authError');
-            el.textContent = msg;
-            el.classList.add('show');
-            el.style.display = 'block';
-        }
-
-        function hideAuthError() {
-            const el = document.getElementById('authError');
-            el.classList.remove('show');
-            el.style.display = 'none';
-        }
-
-        function getFirebaseErrorMessage(code) {
-            const m = {
-                'auth/email-already-in-use': 'Este email já está cadastrado.',
-                'auth/invalid-email': 'Email inválido.',
-                'auth/weak-password': 'A senha deve ter pelo menos 6 caracteres.',
-                'auth/user-not-found': 'Usuário não encontrado.',
-                'auth/wrong-password': 'Senha incorreta.',
-                'auth/invalid-credential': 'Email ou senha incorretos.',
-                'auth/too-many-requests': 'Muitas tentativas. Tente novamente depois.',
-                'auth/network-request-failed': 'Erro de conexão. Verifique sua internet.'
-            };
-            return m[code] || 'Ocorreu um erro. Tente novamente.';
-        }
-
-        // ===== LOGIN =====
-        async function handleLogin(e) {
-            e.preventDefault();
-            hideAuthError();
-
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
-            const btn = document.getElementById('loginBtn');
-
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading-spinner"></span> Entrando...';
-
-            try {
-                await auth.signInWithEmailAndPassword(email, password);
-                showToast('Login realizado com sucesso!', 'success');
-            } catch (error) {
-                showAuthError(getFirebaseErrorMessage(error.code));
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'Entrar';
-            }
-        }
-
-        // ===== REGISTER =====
-        async function handleRegister(e) {
-            e.preventDefault();
-            hideAuthError();
-
-            const name = document.getElementById('registerName').value.trim();
-            const email = document.getElementById('registerEmail').value.trim();
-            const password = document.getElementById('registerPassword').value;
-            const btn = document.getElementById('registerBtn');
-
-            if (name.length < 3) {
-                showAuthError('O nome deve ter pelo menos 3 caracteres.');
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading-spinner"></span> Criando conta...';
-
-            try {
-                const cred = await auth.createUserWithEmailAndPassword(email, password);
-
-                await db.collection('users').doc(cred.user.uid).set({
-                    name: name,
-                    email: email,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                showToast('Conta criada com sucesso! Bem-vindo!', 'success');
-            } catch (error) {
-                showAuthError(getFirebaseErrorMessage(error.code));
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'Criar Conta';
-            }
-        }
-
-        // ===== LOGOUT =====
-        async function handleLogout() {
-            try {
-                await auth.signOut();
-                showToast('Você saiu da sua conta.', 'info');
-            } catch (error) {
-                showToast('Erro ao sair.', 'error');
-            }
-        }
-
-        // ===== LOAD SCRIPTS =====
-        function loadScripts() {
-            db.collection('scripts')
-                .orderBy('createdAt', 'desc')
-                .onSnapshot((snapshot) => {
-                    allScripts = [];
-                    totalCopiesCount = 0;
-
-                    snapshot.forEach(doc => {
-                        const data = doc.data();
-                        data.id = doc.id;
-                        allScripts.push(data);
-                        totalCopiesCount += (data.copies || 0);
-                    });
-
-                    updateStats();
-                    renderScripts();
-                }, (error) => {
-                    console.error('Erro ao carregar scripts:', error);
-                    showToast('Erro ao carregar scripts.', 'error');
-                });
-        }
-
-        // ===== UPDATE STATS =====
-        function updateStats() {
-            document.getElementById('totalScripts').textContent = allScripts.length;
-            document.getElementById('totalCopies').textContent = totalCopiesCount;
-            const uniqueAuthors = new Set(allScripts.map(s => s.authorId));
-            document.getElementById('totalUsers').textContent = uniqueAuthors.size;
-        }
-
-        // ===== RENDER SCRIPTS =====
-        function renderScripts() {
-            const grid = document.getElementById('scriptsGrid');
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-
-            let filtered = allScripts;
-
-            if (currentFilter === 'mine' && currentUser) {
-                filtered = filtered.filter(s => s.authorId === currentUser.uid);
-            }
-
-            if (searchTerm) {
-                filtered = filtered.filter(s =>
-                    s.title.toLowerCase().includes(searchTerm) ||
-                    s.game.toLowerCase().includes(searchTerm) ||
-                    s.description.toLowerCase().includes(searchTerm) ||
-                    s.authorName.toLowerCase().includes(searchTerm)
-                );
-            }
-
-            if (filtered.length === 0) {
-                grid.innerHTML = `
-                    <div class="empty-state">
-                        <div class="empty-icon">
-                            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                        </div>
-                        <h3>Nenhum script encontrado</h3>
-                        <p>${currentFilter === 'mine' ? 'Você ainda não publicou scripts. Clique em "Novo Script" para começar!' : 'Seja o primeiro a publicar um script!'}</p>
-                    </div>
-                `;
-                return;
-            }
-
-            grid.innerHTML = filtered.map(script => {
-                const isOwner = currentUser && script.authorId === currentUser.uid;
-                const initial = (script.authorName || '?').charAt(0).toUpperCase();
-                const date = script.createdAt ? formatDate(script.createdAt) : 'Agora';
-                const codePreview = script.code.length > 70 ? script.code.substring(0, 70) + '...' : script.code;
-
-                return `
-                    <div class="script-card">
-                        <div class="script-card-header">
-                            <span class="script-game-badge">🎮 ${escapeHtml(script.game)}</span>
-                            ${isOwner ? '<span style="font-size:11px;color:var(--green);font-weight:600;">✓ Seu</span>' : ''}
-                        </div>
-                        <div class="script-card-body">
-                            <div class="script-title">${escapeHtml(script.title)}</div>
-                            <div class="script-description">${escapeHtml(script.description)}</div>
-                            <div class="script-code-preview" onclick="viewScript('${script.id}')" title="Clique para ver completo">${escapeHtml(codePreview)}</div>
-                        </div>
-                        <div class="script-card-footer">
-                            <div class="script-author">
-                                <div class="author-avatar">${initial}</div>
-                                <div class="author-info">
-                                    <div class="author-name">${escapeHtml(script.authorName)}</div>
-                                    <div class="author-date">${date} · ${script.copies || 0} cópias</div>
-                                </div>
-                            </div>
-                            <div class="script-actions">
-                                <button class="action-btn" onclick="copyScript('${script.id}')" title="Copiar Script">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-                                    <span class="copy-tooltip" id="tooltip-${script.id}">Copiado!</span>
-                                </button>
-                                <button class="action-btn" onclick="viewScript('${script.id}')" title="Ver Script">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                                </button>
-                                ${isOwner ? `
-                                <button class="action-btn delete-btn" onclick="deleteScript('${script.id}')" title="Excluir">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-                                </button>` : ''}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // ===== FILTER =====
-        function setFilter(filter, el) {
-            currentFilter = filter;
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            el.classList.add('active');
-            renderScripts();
-        }
-
-        function filterScripts() {
-            renderScripts();
-        }
-
-        // ===== CREATE SCRIPT =====
-        async function handleNewScript(e) {
-            e.preventDefault();
-
-            const title = document.getElementById('scriptTitle').value.trim();
-            const game = document.getElementById('scriptGame').value;
-            const description = document.getElementById('scriptDescription').value.trim();
-            const code = document.getElementById('scriptCode').value.trim();
-            const btn = document.getElementById('submitScriptBtn');
-
-            if (!title || !game || !description || !code) {
-                showToast('Preencha todos os campos!', 'error');
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerHTML = '<span class="loading-spinner"></span> Publicando...';
-
-            try {
-                await db.collection('scripts').add({
-                    title: title,
-                    game: game,
-                    description: description,
-                    code: code,
-                    authorId: currentUser.uid,
-                    authorName: currentUserData?.name || currentUser.email.split('@')[0],
-                    copies: 0,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
-                });
-
-                showToast('Script publicado com sucesso! 🎉', 'success');
-                closeModal('newScriptModal');
-
-                document.getElementById('scriptTitle').value = '';
-                document.getElementById('scriptGame').value = '';
-                document.getElementById('scriptDescription').value = '';
-                document.getElementById('scriptCode').value = '';
-            } catch (error) {
-                console.error('Erro:', error);
-                showToast('Erro ao publicar script.', 'error');
-            } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'Publicar Script';
-            }
-        }
-
-        // ===== COPY SCRIPT =====
-        async function copyScript(scriptId) {
-            const script = allScripts.find(s => s.id === scriptId);
-            if (!script) return;
-
-            try {
-                await navigator.clipboard.writeText(script.code);
-
-                db.collection('scripts').doc(scriptId).update({
-                    copies: firebase.firestore.FieldValue.increment(1)
-                }).catch(() => {});
-
-                const tooltip = document.getElementById(`tooltip-${scriptId}`);
-                if (tooltip) {
-                    tooltip.classList.add('show');
-                    setTimeout(() => tooltip.classList.remove('show'), 1500);
-                }
-
-                showToast('Script copiado para a área de transferência! 📋', 'success');
-            } catch (err) {
-                const ta = document.createElement('textarea');
-                ta.value = script.code;
-                ta.style.cssText = 'position:fixed;opacity:0';
-                document.body.appendChild(ta);
-                ta.select();
-                document.execCommand('copy');
-                document.body.removeChild(ta);
-                showToast('Script copiado!', 'success');
-            }
-        }
-
-        // ===== VIEW SCRIPT =====
-        function viewScript(scriptId) {
-            const script = allScripts.find(s => s.id === scriptId);
-            if (!script) return;
-
-            document.getElementById('viewScriptTitle').textContent = '📄 ' + script.title;
-            document.getElementById('viewScriptGame').textContent = script.game;
-            document.getElementById('viewScriptDesc').textContent = script.description;
-            document.getElementById('viewScriptCode').value = script.code;
-            document.getElementById('viewScriptModal').dataset.scriptId = scriptId;
-
-            openModal('viewScriptModal');
-        }
-
-        function copyViewScript() {
-            const code = document.getElementById('viewScriptCode').value;
-            const scriptId = document.getElementById('viewScriptModal').dataset.scriptId;
-
-            navigator.clipboard.writeText(code).then(() => {
-                if (scriptId) {
-                    db.collection('scripts').doc(scriptId).update({
-                        copies: firebase.firestore.FieldValue.increment(1)
-                    }).catch(() => {});
-                }
-                showToast('Script copiado para a área de transferência! 📋', 'success');
-            }).catch(() => {
-                showToast('Erro ao copiar.', 'error');
-            });
-        }
-
-        // ===== DELETE SCRIPT =====
-        async function deleteScript(scriptId) {
-            if (!confirm('Tem certeza que deseja excluir este script?')) return;
-
-            try {
-                await db.collection('scripts').doc(scriptId).delete();
-                showToast('Script excluído.', 'info');
-            } catch (error) {
-                showToast('Erro ao excluir script.', 'error');
-            }
-        }
-
-        // ===== MODAL =====
-        function openModal(id) {
-            document.getElementById(id).classList.add('active');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeModal(id) {
-            document.getElementById(id).classList.remove('active');
-            document.body.style.overflow = '';
-        }
-
-        function openNewScriptModal() {
-            openModal('newScriptModal');
-        }
-
-        document.querySelectorAll('.modal-overlay').forEach(overlay => {
-            overlay.addEventListener('click', (e) => {
-                if (e.target === overlay) {
-                    overlay.classList.remove('active');
-                    document.body.style.overflow = '';
-                }
-            });
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                document.querySelectorAll('.modal-overlay.active').forEach(m => {
-                    m.classList.remove('active');
-                });
-                document.body.style.overflow = '';
-            }
-        });
-
-        // ===== TOAST =====
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-
-            const icons = {
-                success: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>',
-                error: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
-                info: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
-            };
-
-            const toast = document.createElement('div');
-            toast.className = `toast ${type}`;
-            toast.innerHTML = `${icons[type] || icons.info} ${message}`;
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.remove();
-            }, 3200);
-        }
-
-        // ===== HELPERS =====
-        function escapeHtml(text) {
-            const div = document.createElement('div');
-            div.textContent = text;
-            return div.innerHTML;
-        }
-
-        function formatDate(timestamp) {
-            if (!timestamp) return 'Agora';
-
-            const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-            const now = new Date();
-            const diff = Math.floor((now - date) / 1000);
-
-            if (diff < 60) return 'Agora';
-            if (diff < 3600) return `${Math.floor(diff / 60)}min atrás`;
-            if (diff < 86400) return `${Math.floor(diff / 3600)}h atrás`;
-            if (diff < 604800) return `${Math.floor(diff / 86400)}d atrás`;
-
-            return date.toLocaleDateString('pt-BR', {
-                day: '2-digit',
-                month: 'short'
-            });
-        }
-    </script>
+  </div>
+</div>
+
+<!-- ═══ VIEW SCRIPT MODAL ═══ -->
+<div class="modal-overlay" id="viewModal">
+  <div class="modal modal-lg">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-code"></i> Script</h2>
+      <button class="modal-close" onclick="closeModal('viewModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body" id="viewBody"></div>
+  </div>
+</div>
+
+<!-- ═══ TOASTS ═══ -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ═══════════════════════════════════════
+//  FIREBASE INIT
+// ═══════════════════════════════════════
+const firebaseConfig = {
+  apiKey: "AIzaSyDbmJbhYLofmkF99TwhF_skc_iAnwBTNPY",
+  authDomain: "bytez-script.firebaseapp.com",
+  projectId: "bytez-script",
+  storageBucket: "bytez-script.firebasestorage.app",
+  messagingSenderId: "716754895227",
+  appId: "1:716754895227:web:f661b3dbfd25df9b6bfdde"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db   = firebase.firestore();
+
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+let currentUser = null;
+let currentUsername = '';
+let allScripts = [];
+let currentFilter = 'recent';
+let searchQuery = '';
+
+// ═══════════════════════════════════════
+//  AUTH STATE
+// ═══════════════════════════════════════
+auth.onAuthStateChanged(async function(user) {
+  currentUser = user;
+  if (user) {
+    try {
+      const doc = await db.collection('users').doc(user.uid).get();
+      currentUsername = doc.exists ? doc.data().username : user.email.split('@')[0];
+    } catch(e) {
+      currentUsername = user.email.split('@')[0];
+    }
+  } else {
+    currentUsername = '';
+  }
+  renderNav();
+  loadScripts();
+});
+
+// ═══════════════════════════════════════
+//  RENDER NAVBAR
+// ═══════════════════════════════════════
+function renderNav() {
+  var nav = document.getElementById('navRight');
+  var filterMine = document.getElementById('filterMine');
+
+  if (currentUser) {
+    var initial = currentUsername.charAt(0).toUpperCase();
+    nav.innerHTML =
+      '<div class="user-area">' +
+        '<div class="user-avatar">' + initial + '</div>' +
+        '<span class="user-name">' + currentUsername + '</span>' +
+      '</div>' +
+      '<button class="nav-btn nav-btn-primary" onclick="openModal(\'postModal\')">' +
+        '<i class="fa-solid fa-plus"></i><span class="btn-text">Novo Script</span>' +
+      '</button>' +
+      '<button class="nav-btn nav-btn-danger" onclick="handleLogout()">' +
+        '<i class="fa-solid fa-right-from-bracket"></i>' +
+      '</button>';
+    filterMine.style.display = '';
+  } else {
+    nav.innerHTML =
+      '<button class="nav-btn nav-btn-outline" onclick="openModal(\'authModal\')">' +
+        '<i class="fa-solid fa-right-to-bracket"></i><span class="btn-text">Entrar</span>' +
+      '</button>' +
+      '<button class="nav-btn nav-btn-primary" onclick="openAuthRegister()">' +
+        '<i class="fa-solid fa-user-plus"></i><span class="btn-text">Cadastro</span>' +
+      '</button>';
+    filterMine.style.display = 'none';
+    if (currentFilter === 'mine') setFilter('recent');
+  }
+}
+
+// ═══════════════════════════════════════
+//  AUTH FUNCTIONS
+// ═══════════════════════════════════════
+function switchAuthTab(tab) {
+  var loginForm = document.getElementById('loginForm');
+  var regForm = document.getElementById('registerForm');
+  var tabL = document.getElementById('tabLogin');
+  var tabR = document.getElementById('tabRegister');
+  var title = document.getElementById('authTitle');
+
+  if (tab === 'login') {
+    loginForm.style.display = '';
+    regForm.style.display = 'none';
+    tabL.classList.add('active');
+    tabR.classList.remove('active');
+    title.textContent = 'Entrar';
+  } else {
+    loginForm.style.display = 'none';
+    regForm.style.display = '';
+    tabR.classList.add('active');
+    tabL.classList.remove('active');
+    title.textContent = 'Criar Conta';
+  }
+}
+
+function openAuthRegister() {
+  openModal('authModal');
+  switchAuthTab('register');
+}
+
+async function handleLogin(e) {
+  e.preventDefault();
+  var btn = document.getElementById('loginBtn');
+  var email = document.getElementById('loginEmail').value.trim();
+  var pass = document.getElementById('loginPassword').value;
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Entrando...';
+  try {
+    await auth.signInWithEmailAndPassword(email, pass);
+    toast('Login realizado com sucesso!', 'success');
+    closeModal('authModal');
+    document.getElementById('loginForm').reset();
+  } catch (err) {
+    toast(firebaseError(err.code), 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
+}
+
+async function handleRegister(e) {
+  e.preventDefault();
+  var btn = document.getElementById('regBtn');
+  var username = document.getElementById('regUsername').value.trim();
+  var email = document.getElementById('regEmail').value.trim();
+  var pass = document.getElementById('regPassword').value;
+
+  if (username.length < 3) { toast('Nome deve ter pelo menos 3 caracteres.', 'error'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Criando...';
+  try {
+    var cred = await auth.createUserWithEmailAndPassword(email, pass);
+    await db.collection('users').doc(cred.user.uid).set({
+      username: username,
+      email: email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    toast('Conta criada! Bem-vindo, ' + username, 'success');
+    closeModal('authModal');
+    document.getElementById('registerForm').reset();
+  } catch (err) {
+    toast(firebaseError(err.code), 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Criar Conta';
+}
+
+async function handleLogout() {
+  await auth.signOut();
+  toast('Você saiu da conta.', 'info');
+}
+
+function firebaseError(code) {
+  var map = {
+    'auth/user-not-found': 'Usuário não encontrado.',
+    'auth/wrong-password': 'Senha incorreta.',
+    'auth/email-already-in-use': 'Este email já está em uso.',
+    'auth/weak-password': 'Senha deve ter pelo menos 6 caracteres.',
+    'auth/invalid-email': 'Email inválido.',
+    'auth/too-many-requests': 'Muitas tentativas. Tente depois.',
+    'auth/invalid-credential': 'Credenciais inválidas.'
+  };
+  return map[code] || 'Ocorreu um erro. Tente novamente.';
+}
+
+// ═══════════════════════════════════════
+//  SCRIPTS — LOAD
+// ═══════════════════════════════════════
+async function loadScripts() {
+  var grid = document.getElementById('scriptsGrid');
+  grid.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+
+  try {
+    var query = db.collection('scripts');
+
+    if (currentFilter === 'popular') {
+      query = query.orderBy('likes', 'desc');
+    } else if (currentFilter === 'most-viewed') {
+      query = query.orderBy('views', 'desc');
+    } else {
+      query = query.orderBy('createdAt', 'desc');
+    }
+
+    var snap = await query.limit(100).get();
+    allScripts = [];
+    snap.forEach(function(doc) {
+      allScripts.push({ id: doc.id, ...doc.data() });
+    });
+
+    updateStats();
+    renderScripts();
+  } catch (err) {
+    console.error(err);
+    grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i>' +
+      '<h3>Erro ao carregar</h3><p>' + err.message + '</p></div>';
+  }
+}
+
+function updateStats() {
+  var totalLikes = 0, totalViews = 0;
+  allScripts.forEach(function(s) {
+    totalLikes += s.likes || 0;
+    totalViews += s.views || 0;
+  });
+  document.getElementById('totalScripts').textContent = allScripts.length;
+  document.getElementById('totalLikes').textContent = totalLikes;
+  document.getElementById('totalViews').textContent = totalViews;
+}
+
+// ═══════════════════════════════════════
+//  SCRIPTS — RENDER
+// ═══════════════════════════════════════
+function renderScripts() {
+  var grid = document.getElementById('scriptsGrid');
+  var list = allScripts.slice();
+
+  if (currentFilter === 'mine' && currentUser) {
+    list = list.filter(function(s) { return s.authorId === currentUser.uid; });
+  }
+
+  if (searchQuery) {
+    var q = searchQuery.toLowerCase();
+    list = list.filter(function(s) {
+      return (s.title || '').toLowerCase().indexOf(q) !== -1 ||
+             (s.description || '').toLowerCase().indexOf(q) !== -1 ||
+             (s.author || '').toLowerCase().indexOf(q) !== -1;
+    });
+  }
+
+  if (list.length === 0) {
+    grid.innerHTML = '<div class="empty-state">' +
+      '<i class="fa-solid fa-folder-open"></i>' +
+      '<h3>Nenhum script encontrado</h3>' +
+      '<p>' + (searchQuery ? 'Tente outra busca.' : 'Seja o primeiro a publicar!') + '</p></div>';
+    return;
+  }
+
+  var html = '';
+  list.forEach(function(s, i) {
+    var date = s.createdAt ? formatDate(s.createdAt) : '—';
+    var liked = currentUser && s.likedBy && s.likedBy.indexOf(currentUser.uid) !== -1;
+    var isOwner = currentUser && s.authorId === currentUser.uid;
+    var codePreview = escapeHtml((s.code || '').substring(0, 150));
+
+    html += '<div class="script-card" style="animation-delay:' + (i * 0.06) + 's">' +
+      '<div class="card-header">' +
+        '<div class="card-title">' + escapeHtml(s.title) + '</div>' +
+        '<div class="card-badge">LUA</div>' +
+      '</div>' +
+      '<div class="card-desc">' + escapeHtml(s.description) + '</div>' +
+      '<div class="card-code">' + codePreview + '</div>' +
+      '<div class="card-meta">' +
+        '<div>' +
+          '<span class="card-author"><i class="fa-solid fa-user"></i> ' + escapeHtml(s.author) + '</span>' +
+          '<span class="card-date" style="margin-left:12px"><i class="fa-regular fa-calendar"></i> ' + date + '</span>' +
+        '</div>' +
+        '<div class="card-stats">' +
+          '<span><i class="fa-solid fa-eye"></i> ' + (s.views || 0) + '</span>' +
+          '<span><i class="fa-solid fa-heart"></i> ' + (s.likes || 0) + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="card-actions">' +
+        '<button class="action-btn btn-copy" onclick="copyScript(\'' + s.id + '\')">' +
+          '<i class="fa-regular fa-copy"></i> Copiar</button>' +
+        '<button class="action-btn btn-view" onclick="viewScript(\'' + s.id + '\')">' +
+          '<i class="fa-solid fa-expand"></i> Ver</button>' +
+        '<button class="action-btn btn-like ' + (liked ? 'liked' : '') + '" onclick="toggleLike(\'' + s.id + '\')">' +
+          '<i class="fa-solid fa-heart"></i> ' + (s.likes || 0) + '</button>' +
+        (isOwner ? '<button class="action-btn btn-delete" onclick="deleteScript(\'' + s.id + '\')">' +
+          '<i class="fa-solid fa-trash"></i></button>' : '') +
+      '</div>' +
+    '</div>';
+  });
+
+  grid.innerHTML = html;
+}
+
+// ═══════════════════════════════════════
+//  SCRIPTS — POST
+// ═══════════════════════════════════════
+async function handlePost(e) {
+  e.preventDefault();
+  if (!currentUser) { toast('Faça login para postar.', 'error'); return; }
+
+  var btn = document.getElementById('postBtn');
+  var title = document.getElementById('postTitle').value.trim();
+  var desc  = document.getElementById('postDesc').value.trim();
+  var code  = document.getElementById('postCode').value;
+
+  if (!title || !desc || !code) { toast('Preencha todos os campos.', 'error'); return; }
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publicando...';
+
+  try {
+    await db.collection('scripts').add({
+      title: title,
+      description: desc,
+      code: code,
+      author: currentUsername,
+      authorId: currentUser.uid,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      views: 0,
+      likes: 0,
+      likedBy: []
+    });
+    toast('Script publicado com sucesso!', 'success');
+    closeModal('postModal');
+    document.getElementById('postForm').reset();
+    loadScripts();
+  } catch (err) {
+    toast('Erro ao publicar: ' + err.message, 'error');
+  }
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Publicar Script';
+}
+
+// ═══════════════════════════════════════
+//  SCRIPTS — COPY
+// ═══════════════════════════════════════
+function copyScript(id) {
+  var script = allScripts.find(function(s) { return s.id === id; });
+  if (!script) return;
+  navigator.clipboard.writeText(script.code).then(function() {
+    toast('Script copiado!', 'success');
+  }).catch(function() {
+    var ta = document.createElement('textarea');
+    ta.value = script.code;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('Script copiado!', 'success');
+  });
+}
+
+// ═══════════════════════════════════════
+//  SCRIPTS — VIEW
+// ═══════════════════════════════════════
+async function viewScript(id) {
+  var script = allScripts.find(function(s) { return s.id === id; });
+  if (!script) return;
+
+  try {
+    await db.collection('scripts').doc(id).update({
+      views: firebase.firestore.FieldValue.increment(1)
+    });
+    script.views = (script.views || 0) + 1;
+    updateStats();
+  } catch(e) { /* ok */ }
+
+  var date = script.createdAt ? formatDate(script.createdAt) : '—';
+  var liked = currentUser && script.likedBy && script.likedBy.indexOf(currentUser.uid) !== -1;
+
+  document.getElementById('viewBody').innerHTML =
+    '<div class="view-title">' + escapeHtml(script.title) + '</div>' +
+    '<div class="view-meta">' +
+      '<span><i class="fa-solid fa-user" style="color:var(--accent3)"></i> ' + escapeHtml(script.author) + '</span>' +
+      '<span><i class="fa-regular fa-calendar"></i> ' + date + '</span>' +
+      '<span><i class="fa-solid fa-eye" style="color:var(--accent2)"></i> ' + (script.views || 0) + ' views</span>' +
+      '<span><i class="fa-solid fa-heart" style="color:var(--danger)"></i> ' + (script.likes || 0) + ' likes</span>' +
+    '</div>' +
+    '<div class="view-desc">' + escapeHtml(script.description) + '</div>' +
+    '<div class="view-code-header">' +
+      '<span><i class="fa-solid fa-code"></i> Código Lua</span>' +
+      '<button class="action-btn btn-copy" onclick="copyScript(\'' + script.id + '\')" style="flex:unset;padding:6px 14px;font-size:.8rem">' +
+        '<i class="fa-regular fa-copy"></i> Copiar</button>' +
+    '</div>' +
+    '<div class="view-code-block">' + escapeHtml(script.code) + '</div>' +
+    '<div class="view-actions">' +
+      '<button class="action-btn btn-like ' + (liked ? 'liked' : '') + '" onclick="toggleLike(\'' + script.id + '\');setTimeout(function(){viewScript(\'' + script.id + '\')},500)">' +
+        '<i class="fa-solid fa-heart"></i> ' + (liked ? 'Descurtir' : 'Curtir') + ' (' + (script.likes || 0) + ')</button>' +
+      '<button class="action-btn btn-copy" onclick="copyScript(\'' + script.id + '\')">' +
+        '<i class="fa-regular fa-copy"></i> Copiar Script</button>' +
+    '</div>';
+
+  openModal('viewModal');
+}
+
+// ═══════════════════════════════════════
+//  SCRIPTS — LIKE
+// ═══════════════════════════════════════
+async function toggleLike(id) {
+  if (!currentUser) { toast('Faça login para curtir.', 'error'); return; }
+
+  var script = allScripts.find(function(s) { return s.id === id; });
+  if (!script) return;
+
+  var likedBy = script.likedBy || [];
+  var hasLiked = likedBy.indexOf(currentUser.uid) !== -1;
+
+  try {
+    if (hasLiked) {
+      await db.collection('scripts').doc(id).update({
+        likes: firebase.firestore.FieldValue.increment(-1),
+        likedBy: firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
+      });
+      script.likes = Math.max(0, (script.likes || 0) - 1);
+      script.likedBy = likedBy.filter(function(uid) { return uid !== currentUser.uid; });
+    } else {
+      await db.collection('scripts').doc(id).update({
+        likes: firebase.firestore.FieldValue.increment(1),
+        likedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
+      });
+      script.likes = (script.likes || 0) + 1;
+      script.likedBy = likedBy.concat([currentUser.uid]);
+    }
+    updateStats();
+    renderScripts();
+  } catch (err) {
+    toast('Erro ao curtir.', 'error');
+  }
+}
+
+// ═══════════════════════════════════════
+//  SCRIPTS — DELETE
+// ═══════════════════════════════════════
+async function deleteScript(id) {
+  if (!currentUser) return;
+  if (!confirm('Tem certeza que deseja deletar este script?')) return;
+
+  try {
+    await db.collection('scripts').doc(id).delete();
+    toast('Script deletado.', 'info');
+    allScripts = allScripts.filter(function(s) { return s.id !== id; });
+    updateStats();
+    renderScripts();
+  } catch (err) {
+    toast('Erro ao deletar: ' + err.message, 'error');
+  }
+}
+
+// ═══════════════════════════════════════
+//  FILTERS & SEARCH
+// ═══════════════════════════════════════
+function setFilter(filter) {
+  currentFilter = filter;
+  document.querySelectorAll('.filter-btn').forEach(function(btn) {
+    btn.classList.toggle('active', btn.dataset.filter === filter);
+  });
+  loadScripts();
+}
+
+function resetFilters() {
+  searchQuery = '';
+  document.getElementById('searchInput').value = '';
+  setFilter('recent');
+}
+
+function handleSearch() {
+  searchQuery = document.getElementById('searchInput').value.trim();
+  renderScripts();
+}
+
+// ═══════════════════════════════════════
+//  MODALS
+// ═══════════════════════════════════════
+function openModal(id) {
+  var el = document.getElementById(id);
+  el.style.display = 'flex';
+  requestAnimationFrame(function() { el.classList.add('active'); });
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(id) {
+  var el = document.getElementById(id);
+  el.classList.remove('active');
+  setTimeout(function() { el.style.display = 'none'; }, 300);
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeModal(overlay.id);
+  });
+});
+
+// ═══════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════
+function toast(msg, type) {
+  type = type || 'info';
+  var container = document.getElementById('toastContainer');
+  var icons = { success: 'fa-check-circle', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+  var el = document.createElement('div');
+  el.className = 'toast ' + type;
+  el.innerHTML = '<i class="fa-solid ' + (icons[type] || icons.info) + '"></i> ' + msg;
+  container.appendChild(el);
+  setTimeout(function() { el.style.opacity = '0'; el.style.transform = 'translateX(60px)'; el.style.transition = '.3s'; }, 3500);
+  setTimeout(function() { el.remove(); }, 3800);
+}
+
+// ═══════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════
+function escapeHtml(str) {
+  if (!str) return '';
+  var d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function formatDate(ts) {
+  if (!ts) return '—';
+  var d = ts.toDate ? ts.toDate() : new Date(ts);
+  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+window.addEventListener('scroll', function() {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+});
+</script>
 </body>
 </html>
