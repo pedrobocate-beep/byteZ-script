@@ -3,1189 +3,1267 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ByteZ Scripts – Hub de Scripts Lua</title>
-
-<!-- Firebase SDKs -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-<!-- Icons & Fonts -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+<title>BytezHub — Lua Script Hub</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
-*{margin:0;padding:0;box-sizing:border-box}
-:root{
-  --bg:#06060c;--bg2:#0c0c16;--bg3:#111122;
-  --card:rgba(255,255,255,.03);--card-hover:rgba(255,255,255,.06);
-  --border:rgba(255,255,255,.06);--border-hover:rgba(0,255,136,.25);
-  --accent:#00ff88;--accent2:#00d4ff;--accent3:#7c3aed;--danger:#ff4466;
-  --text:#e0e0e8;--text2:#8888aa;
-  --grad:linear-gradient(135deg,#00ff88,#00d4ff);
-  --shadow:0 8px 32px rgba(0,0,0,.4);
-  --radius:12px;--radius-sm:8px;
-  --font:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;--title:'Rajdhani',sans-serif;
-}
-html{scroll-behavior:smooth}
-body{
-  font-family:var(--font);background:var(--bg);color:var(--text);
-  min-height:100vh;overflow-x:hidden;
-  background-image:
-    linear-gradient(rgba(0,255,136,.015) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(0,255,136,.015) 1px,transparent 1px);
-  background-size:60px 60px;
-}
-a{color:inherit;text-decoration:none}
-button{cursor:pointer;font-family:var(--font);border:none;outline:none}
-input,textarea{font-family:var(--font);outline:none}
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:var(--bg2)}
-::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px}
+  :root {
+    --bg: #050508;
+    --bg2: #0a0a12;
+    --bg3: #0f0f1a;
+    --card: #0d0d18;
+    --card-border: #1a1a2e;
+    --accent: #00f5ff;
+    --accent2: #7b2fff;
+    --accent3: #ff2f6e;
+    --text: #e0e0f0;
+    --text-dim: #6a6a8a;
+    --green: #00ff88;
+    --orange: #ff8c00;
+    --glow: 0 0 20px rgba(0,245,255,0.3);
+    --glow2: 0 0 20px rgba(123,47,255,0.3);
+  }
 
-/* NAVBAR */
-.navbar{
-  position:fixed;top:0;left:0;right:0;z-index:1000;
-  background:rgba(6,6,12,.85);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  padding:0 24px;height:64px;
-  display:flex;align-items:center;justify-content:space-between;
-  transition:.3s;
-}
-.navbar.scrolled{background:rgba(6,6,12,.95);box-shadow:0 4px 30px rgba(0,0,0,.5)}
-.nav-brand{
-  font-family:var(--title);font-size:1.6rem;font-weight:700;
-  background:var(--grad);-webkit-background-clip:text;background-clip:text;
-  -webkit-text-fill-color:transparent;
-  display:flex;align-items:center;gap:8px;user-select:none;
-}
-.nav-brand i{-webkit-text-fill-color:var(--accent);font-size:1.3rem;filter:drop-shadow(0 0 8px rgba(0,255,136,.4))}
-.nav-center{flex:1;max-width:420px;margin:0 24px}
-.search-box{position:relative;width:100%}
-.search-box input{
-  width:100%;padding:10px 16px 10px 40px;
-  background:var(--bg3);border:1px solid var(--border);border-radius:50px;
-  color:var(--text);font-size:.9rem;transition:.3s;
-}
-.search-box input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,255,136,.1)}
-.search-box input::placeholder{color:var(--text2)}
-.search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2);font-size:.85rem}
-.nav-right{display:flex;align-items:center;gap:10px}
-.nav-btn{
-  padding:8px 18px;border-radius:50px;font-size:.85rem;font-weight:600;
-  transition:.3s;display:flex;align-items:center;gap:6px;
-}
-.nav-btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}
-.nav-btn-outline:hover{border-color:var(--accent);color:var(--accent)}
-.nav-btn-primary{background:var(--grad);color:#000;border:none}
-.nav-btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,255,136,.3)}
-.user-area{display:flex;align-items:center;gap:12px}
-.user-avatar{
-  width:34px;height:34px;border-radius:50%;
-  background:var(--grad);display:flex;align-items:center;justify-content:center;
-  font-weight:700;color:#000;font-size:.85rem;
-}
-.user-name{font-weight:600;font-size:.9rem;color:var(--accent)}
-.nav-btn-danger{background:transparent;border:1px solid rgba(255,68,102,.3);color:var(--danger)}
-.nav-btn-danger:hover{background:rgba(255,68,102,.1);border-color:var(--danger)}
+  * { margin:0; padding:0; box-sizing:border-box; }
 
-/* HERO */
-.hero{padding:120px 24px 40px;text-align:center;position:relative}
-.hero::after{
-  content:'';position:absolute;top:60px;left:50%;transform:translateX(-50%);
-  width:600px;height:600px;
-  background:radial-gradient(circle,rgba(0,255,136,.06) 0%,transparent 70%);
-  pointer-events:none;
-}
-.hero h1{font-family:var(--title);font-size:clamp(2.2rem,5vw,3.5rem);font-weight:700;margin-bottom:12px;line-height:1.1}
-.hero h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{color:var(--text2);font-size:1.05rem;max-width:500px;margin:0 auto 30px}
-.stats-row{display:flex;justify-content:center;gap:40px;flex-wrap:wrap}
-.stat{text-align:center}
-.stat-num{
-  font-family:var(--title);font-size:2rem;font-weight:700;
-  background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-}
-.stat-label{color:var(--text2);font-size:.8rem;text-transform:uppercase;letter-spacing:1px}
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-/* FILTERS */
-.filters{display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 24px 20px;flex-wrap:wrap}
-.filter-btn{
-  padding:8px 20px;border-radius:50px;font-size:.85rem;font-weight:500;
-  background:var(--bg3);border:1px solid var(--border);color:var(--text2);transition:.3s;
-}
-.filter-btn:hover{color:var(--text);border-color:rgba(255,255,255,.15)}
-.filter-btn.active{background:var(--grad);color:#000;border-color:transparent;font-weight:600;box-shadow:0 4px 20px rgba(0,255,136,.2)}
+  /* Animated background grid */
+  body::before {
+    content:'';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,245,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,245,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
 
-/* GRID */
-.container{max-width:1200px;margin:0 auto;padding:0 24px 60px}
-.scripts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
-.script-card{
-  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
-  padding:24px;transition:.35s;position:relative;overflow:hidden;
-  animation:fadeUp .5s ease both;
-}
-.script-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:var(--grad);opacity:0;transition:.35s;
-}
-.script-card:hover{
-  border-color:var(--border-hover);background:var(--card-hover);
-  transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.4);
-}
-.script-card:hover::before{opacity:1}
-.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
-.card-title{font-family:var(--title);font-size:1.25rem;font-weight:700;color:var(--text);line-height:1.3;flex:1;margin-right:10px}
-.card-badge{
-  padding:3px 10px;border-radius:50px;font-size:.7rem;font-weight:600;
-  background:rgba(0,255,136,.1);color:var(--accent);border:1px solid rgba(0,255,136,.2);white-space:nowrap;
-}
-.card-desc{
-  color:var(--text2);font-size:.88rem;line-height:1.5;margin-bottom:16px;
-  display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
-}
-.card-code{
-  background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:var(--radius-sm);
-  padding:12px 14px;margin-bottom:16px;
-  font-family:var(--mono);font-size:.78rem;color:var(--accent);
-  max-height:80px;overflow:hidden;position:relative;
-  line-height:1.5;white-space:pre-wrap;word-break:break-all;
-}
-.card-code::after{
-  content:'';position:absolute;bottom:0;left:0;right:0;height:30px;
-  background:linear-gradient(transparent,rgba(0,0,0,.6));
-}
-.card-meta{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px}
-.card-author{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text2)}
-.card-author i{color:var(--accent3);font-size:.75rem}
-.card-date{font-size:.78rem;color:var(--text2)}
-.card-stats{display:flex;align-items:center;gap:14px;font-size:.8rem;color:var(--text2)}
-.card-stats span{display:flex;align-items:center;gap:4px}
-.card-stats i{font-size:.75rem}
-.card-actions{display:flex;gap:8px;flex-wrap:wrap}
-.action-btn{
-  flex:1;min-width:0;padding:10px 12px;border-radius:var(--radius-sm);
-  font-size:.82rem;font-weight:600;transition:.3s;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-}
-.btn-copy{background:rgba(0,255,136,.08);color:var(--accent);border:1px solid rgba(0,255,136,.15)}
-.btn-copy:hover{background:rgba(0,255,136,.15);border-color:rgba(0,255,136,.3)}
-.btn-view{background:rgba(0,212,255,.08);color:var(--accent2);border:1px solid rgba(0,212,255,.15)}
-.btn-view:hover{background:rgba(0,212,255,.15);border-color:rgba(0,212,255,.3)}
-.btn-like{background:rgba(124,58,237,.08);color:var(--accent3);border:1px solid rgba(124,58,237,.15)}
-.btn-like:hover{background:rgba(124,58,237,.15);border-color:rgba(124,58,237,.3)}
-.btn-like.liked{background:rgba(124,58,237,.2);border-color:rgba(124,58,237,.4);color:#a78bfa}
-.btn-delete{background:rgba(255,68,102,.08);color:var(--danger);border:1px solid rgba(255,68,102,.15)}
-.btn-delete:hover{background:rgba(255,68,102,.15);border-color:rgba(255,68,102,.3)}
+  body::after {
+    content:'';
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(123,47,255,0.06) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(0,245,255,0.06) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
 
-/* EMPTY */
-.empty-state{text-align:center;padding:80px 20px;grid-column:1/-1}
-.empty-state i{font-size:3rem;color:var(--text2);margin-bottom:16px;opacity:.4}
-.empty-state h3{font-family:var(--title);font-size:1.4rem;color:var(--text2);margin-bottom:8px}
-.empty-state p{color:var(--text2);font-size:.9rem;opacity:.7}
+  /* ---- SCROLLBAR ---- */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--accent2); border-radius: 3px; }
 
-/* MODALS */
-.modal-overlay{
-  position:fixed;top:0;left:0;right:0;bottom:0;z-index:2000;
-  background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
-  display:none;align-items:center;justify-content:center;
-  padding:20px;opacity:0;transition:.3s;
-}
-.modal-overlay.active{display:flex;opacity:1}
-.modal{
-  background:var(--bg2);border:1px solid var(--border);border-radius:16px;
-  width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
-  box-shadow:0 24px 80px rgba(0,0,0,.6);
-  transform:scale(.95) translateY(20px);transition:.35s;
-}
-.modal-overlay.active .modal{transform:scale(1) translateY(0)}
-.modal-lg{max-width:720px}
-.modal-header{display:flex;align-items:center;justify-content:space-between;padding:24px 28px 0}
-.modal-header h2{
-  font-family:var(--title);font-size:1.5rem;font-weight:700;
-  background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-}
-.modal-close{
-  width:36px;height:36px;border-radius:50%;
-  background:rgba(255,255,255,.05);color:var(--text2);
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.1rem;transition:.3s;
-}
-.modal-close:hover{background:rgba(255,68,102,.15);color:var(--danger)}
-.modal-body{padding:24px 28px 28px}
+  /* ---- NAVBAR ---- */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 60px;
+    background: rgba(5,5,8,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(0,245,255,0.1);
+  }
 
-/* AUTH TABS */
-.auth-tabs{display:flex;gap:0;margin-bottom:24px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border)}
-.auth-tab{
-  flex:1;padding:12px;text-align:center;font-weight:600;font-size:.9rem;
-  background:transparent;color:var(--text2);transition:.3s;
-}
-.auth-tab.active{background:var(--grad);color:#000}
-.auth-tab:hover:not(.active){background:rgba(255,255,255,.03)}
+  .logo {
+    font-family: 'Orbitron', monospace;
+    font-weight: 900;
+    font-size: 20px;
+    letter-spacing: 2px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-decoration: none;
+    position: relative;
+  }
+  .logo span { color: var(--accent3); -webkit-text-fill-color: var(--accent3); }
 
-/* FORMS */
-.form-group{margin-bottom:18px}
-.form-group label{
-  display:block;font-size:.85rem;font-weight:600;color:var(--text2);
-  margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;
-}
-.form-group input,.form-group textarea{
-  width:100%;padding:12px 16px;
-  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);
-  color:var(--text);font-size:.9rem;transition:.3s;
-}
-.form-group input:focus,.form-group textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,255,136,.08)}
-.form-group textarea{resize:vertical;min-height:100px;font-family:var(--mono);font-size:.85rem}
-.form-group textarea.code-input{min-height:200px;color:var(--accent);background:rgba(0,0,0,.3)}
-.submit-btn{
-  width:100%;padding:14px;border-radius:var(--radius-sm);
-  background:var(--grad);color:#000;font-size:1rem;font-weight:700;
-  transition:.3s;text-transform:uppercase;letter-spacing:1px;
-}
-.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,255,136,.3)}
-.submit-btn:active{transform:translateY(0)}
-.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+  .nav-right { display: flex; align-items: center; gap: 12px; }
 
-/* VIEW */
-.view-title{font-family:var(--title);font-size:1.6rem;font-weight:700;margin-bottom:6px}
-.view-meta{display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
-.view-meta span{font-size:.85rem;color:var(--text2);display:flex;align-items:center;gap:5px}
-.view-desc{color:var(--text2);font-size:.92rem;line-height:1.6;margin-bottom:20px}
-.view-code-block{
-  background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:var(--radius-sm);
-  padding:20px;font-family:var(--mono);font-size:.82rem;
-  color:var(--accent);line-height:1.6;
-  max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;
-}
-.view-code-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.view-code-header span{font-family:var(--title);font-size:.95rem;color:var(--text2);font-weight:600}
-.view-actions{display:flex;gap:10px;margin-top:20px}
-.view-actions .action-btn{flex:unset;padding:12px 24px}
+  .nav-user {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+  }
+  .nav-user .avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700; color: white;
+    font-family: 'Orbitron', monospace;
+    border: 1px solid rgba(0,245,255,0.3);
+  }
 
-/* STATUS BAR */
-.status-bar{
-  position:fixed;bottom:0;left:0;right:0;
-  background:rgba(6,6,12,.95);border-top:1px solid var(--border);
-  padding:8px 24px;display:flex;align-items:center;justify-content:space-between;
-  font-size:.78rem;color:var(--text2);z-index:999;
-}
-.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px}
-.status-dot.online{background:var(--accent);box-shadow:0 0 8px rgba(0,255,136,.5)}
-.status-dot.offline{background:var(--danger)}
+  .btn {
+    padding: 8px 18px;
+    border: 1px solid;
+    border-radius: 4px;
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn::before {
+    content:'';
+    position: absolute;
+    inset: 0;
+    background: currentColor;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .btn:hover::before { opacity: 0.08; }
 
-/* TOAST */
-.toast-container{position:fixed;bottom:50px;right:24px;z-index:3000;display:flex;flex-direction:column;gap:10px}
-.toast{
-  padding:14px 22px;border-radius:var(--radius-sm);
-  background:var(--bg3);border:1px solid var(--border);
-  color:var(--text);font-size:.88rem;font-weight:500;
-  box-shadow:var(--shadow);display:flex;align-items:center;gap:10px;
-  animation:slideIn .35s ease;min-width:280px;
-}
-.toast.success{border-color:rgba(0,255,136,.3)}
-.toast.success i{color:var(--accent)}
-.toast.error{border-color:rgba(255,68,102,.3)}
-.toast.error i{color:var(--danger)}
-.toast.info{border-color:rgba(0,212,255,.3)}
-.toast.info i{color:var(--accent2)}
+  .btn-primary {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,245,255,0.05);
+  }
+  .btn-primary:hover {
+    background: rgba(0,245,255,0.12);
+    box-shadow: 0 0 15px rgba(0,245,255,0.3);
+  }
 
-/* LOADER */
-.loader{display:flex;justify-content:center;padding:60px;grid-column:1/-1}
-.spinner{
-  width:40px;height:40px;border:3px solid var(--border);
-  border-top-color:var(--accent);border-radius:50%;
-  animation:spin .8s linear infinite;
-}
+  .btn-secondary {
+    border-color: var(--accent2);
+    color: var(--accent2);
+    background: rgba(123,47,255,0.05);
+  }
+  .btn-secondary:hover {
+    background: rgba(123,47,255,0.12);
+    box-shadow: var(--glow2);
+  }
 
-/* REALTIME BADGE */
-.realtime-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  padding:4px 12px;border-radius:50px;
-  background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);
-  font-size:.75rem;color:var(--accent);font-weight:600;
-  animation:pulse 2s ease infinite;
-}
+  .btn-danger {
+    border-color: var(--accent3);
+    color: var(--accent3);
+    background: rgba(255,47,110,0.05);
+  }
+  .btn-danger:hover {
+    background: rgba(255,47,110,0.12);
+    box-shadow: 0 0 15px rgba(255,47,110,0.3);
+  }
 
-@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-@keyframes slideIn{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
-@keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse{0%,100%{opacity:1}50%{opacity:.6}}
+  .btn-success {
+    border-color: var(--green);
+    color: var(--green);
+    background: rgba(0,255,136,0.05);
+  }
+  .btn-success:hover { background: rgba(0,255,136,0.12); }
 
-@media(max-width:768px){
-  .navbar{padding:0 14px;gap:8px}
-  .nav-center{max-width:none;margin:0 10px;flex:1}
-  .nav-right{gap:6px}
-  .nav-btn span.btn-text{display:none}
-  .nav-btn{padding:8px 12px}
-  .user-name{display:none}
-  .hero h1{font-size:1.8rem}
-  .scripts-grid{grid-template-columns:1fr}
-  .modal{margin:10px;max-height:95vh}
-  .stats-row{gap:20px}
-  .view-actions{flex-direction:column}
-  .view-actions .action-btn{flex:1}
-  .status-bar{font-size:.7rem;padding:6px 14px}
-}
-@media(max-width:480px){
-  .hero{padding:100px 16px 30px}
-  .container{padding:0 12px 40px}
-  .script-card{padding:18px}
-  .card-actions{flex-direction:column}
-  .action-btn{flex:unset}
-}
+  /* ---- MAIN WRAPPER ---- */
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 24px 60px;
+  }
+
+  /* ---- HERO ---- */
+  .hero {
+    text-align: center;
+    padding: 60px 0 50px;
+  }
+  .hero-eyebrow {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--accent2);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .hero h1 {
+    font-family: 'Orbitron', monospace;
+    font-size: clamp(32px, 6vw, 68px);
+    font-weight: 900;
+    line-height: 1.1;
+    letter-spacing: -1px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 50%, var(--accent3) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 16px;
+  }
+  .hero-sub {
+    font-size: 17px;
+    color: var(--text-dim);
+    font-weight: 300;
+    letter-spacing: 1px;
+    margin-bottom: 36px;
+  }
+
+  /* Stats bar */
+  .stats-bar {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .stat-item { text-align: center; }
+  .stat-num {
+    font-family: 'Orbitron', monospace;
+    font-size: 24px;
+    font-weight: 900;
+    color: var(--accent);
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ---- SEARCH ---- */
+  .search-wrap {
+    max-width: 560px;
+    margin: 0 auto 50px;
+    position: relative;
+  }
+  .search-icon {
+    position: absolute;
+    left: 14px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: var(--text-dim);
+    pointer-events: none;
+  }
+  #searchInput {
+    width: 100%;
+    padding: 14px 14px 14px 42px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  #searchInput::placeholder { color: var(--text-dim); }
+  #searchInput:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 20px rgba(0,245,255,0.1);
+  }
+
+  /* ---- SECTION HEADER ---- */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    flex-wrap: wrap; gap: 12px;
+  }
+  .section-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--text);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .section-title::before {
+    content:'';
+    display: inline-block;
+    width: 4px; height: 16px;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+  .script-count {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--text-dim);
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    padding: 4px 10px;
+    border-radius: 20px;
+  }
+
+  /* ---- SCRIPTS GRID ---- */
+  #scriptsGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 18px;
+  }
+
+  /* ---- SCRIPT CARD ---- */
+  .script-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.25s, transform 0.2s, box-shadow 0.25s;
+    cursor: pointer;
+  }
+  .script-card::before {
+    content:'';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .script-card:hover {
+    border-color: rgba(0,245,255,0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+  .script-card:hover::before { opacity: 1; }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .card-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.3;
+    word-break: break-word;
+  }
+
+  .card-badges { display: flex; gap: 6px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
+  .badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 3px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border: 1px solid;
+  }
+  .badge-lua { border-color: var(--orange); color: var(--orange); background: rgba(255,140,0,0.08); }
+  .badge-new { border-color: var(--green); color: var(--green); background: rgba(0,255,136,0.08); }
+
+  .card-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.5;
+    margin-bottom: 14px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-code-preview {
+    background: #060610;
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 5px;
+    padding: 10px 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 14px;
+  }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .card-meta-left { display: flex; gap: 14px; align-items: center; }
+  .meta-item { display: flex; align-items: center; gap: 4px; }
+  .meta-item svg { width: 12px; height: 12px; }
+
+  .card-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+  .card-actions .btn { padding: 7px 14px; font-size: 9px; }
+
+  /* ---- EMPTY STATE ---- */
+  .empty-state {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-dim);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .empty-state h3 {
+    font-family: 'Orbitron', monospace;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  /* ---- MODALS ---- */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--bg2);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 32px;
+    width: 100%;
+    max-width: 460px;
+    position: relative;
+    animation: modalIn 0.25s ease;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal-wide { max-width: 680px; }
+  @keyframes modalIn {
+    from { opacity:0; transform: scale(0.96) translateY(16px); }
+    to { opacity:1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: none;
+    border: 1px solid var(--card-border);
+    color: var(--text-dim);
+    width: 28px; height: 28px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover { border-color: var(--accent3); color: var(--accent3); }
+
+  .modal h2 {
+    font-family: 'Orbitron', monospace;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .modal-sub {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 24px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  /* Form fields */
+  .form-group { margin-bottom: 16px; }
+  .form-label {
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 6px;
+  }
+  .form-input, .form-textarea {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 5px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .form-textarea {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    resize: vertical;
+    min-height: 100px;
+  }
+  .form-input:focus, .form-textarea:focus {
+    border-color: var(--accent);
+  }
+  .form-input::placeholder, .form-textarea::placeholder { color: var(--text-dim); }
+
+  .form-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+
+  .form-switch {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 16px;
+  }
+  .form-switch a {
+    color: var(--accent);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .form-switch a:hover { text-decoration: underline; }
+
+  .error-msg {
+    background: rgba(255,47,110,0.1);
+    border: 1px solid rgba(255,47,110,0.3);
+    border-radius: 5px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--accent3);
+    font-family: 'Share Tech Mono', monospace;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .error-msg.show { display: block; }
+  .success-msg {
+    background: rgba(0,255,136,0.08);
+    border: 1px solid rgba(0,255,136,0.3);
+    border-radius: 5px;
+    padding: 10px 12px;
+    font-size: 12px;
+    color: var(--green);
+    font-family: 'Share Tech Mono', monospace;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .success-msg.show { display: block; }
+
+  /* ---- VIEW SCRIPT MODAL ---- */
+  .script-full-code {
+    background: #060610;
+    border: 1px solid rgba(0,245,255,0.1);
+    border-radius: 6px;
+    padding: 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--accent);
+    line-height: 1.6;
+    overflow-x: auto;
+    white-space: pre;
+    max-height: 280px;
+    overflow-y: auto;
+    margin-bottom: 16px;
+  }
+
+  .script-info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+  }
+  .info-item { color: var(--text-dim); }
+  .info-item span { color: var(--text); }
+
+  .like-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: none;
+    border: 1px solid var(--card-border);
+    color: var(--text-dim);
+    padding: 7px 14px;
+    border-radius: 4px;
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .like-btn:hover, .like-btn.liked {
+    border-color: var(--accent3);
+    color: var(--accent3);
+    background: rgba(255,47,110,0.08);
+  }
+
+  /* ---- TOAST ---- */
+  #toast {
+    position: fixed;
+    bottom: 30px; right: 30px;
+    z-index: 999;
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 12px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--text);
+    transform: translateX(110%);
+    transition: transform 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+    max-width: 320px;
+  }
+  #toast.show { transform: translateX(0); }
+  #toast.success { border-color: var(--green); }
+  #toast.error { border-color: var(--accent3); }
+
+  /* ---- LOADING SPINNER ---- */
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(0,245,255,0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-state {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 60px;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+  }
+
+  /* ---- PANEL (admin delete) ---- */
+  .panel-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    padding: 3px 10px;
+    border: 1px solid var(--accent3);
+    border-radius: 3px;
+    color: var(--accent3);
+    background: rgba(255,47,110,0.08);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 600px) {
+    nav { padding: 0 16px; }
+    .logo { font-size: 15px; }
+    .wrapper { padding: 70px 12px 40px; }
+    .hero { padding: 30px 0 30px; }
+    .stats-bar { gap: 20px; }
+    .modal { padding: 20px; }
+    .script-info-grid { grid-template-columns: 1fr; }
+  }
+
+  /* ---- MISC UTILITIES ---- */
+  .divider {
+    height: 1px;
+    background: var(--card-border);
+    margin: 32px 0;
+  }
+  .text-accent { color: var(--accent); }
+  .text-dim { color: var(--text-dim); }
+
+  /* Glitch animation for logo */
+  @keyframes glitch {
+    0%,100%{clip-path:none;transform:none}
+    10%{clip-path:polygon(0 20%,100% 20%,100% 40%,0 40%);transform:translate(-2px,0)}
+    20%{clip-path:polygon(0 60%,100% 60%,100% 80%,0 80%);transform:translate(2px,0)}
+    30%{clip-path:none;transform:none}
+  }
+  .logo:hover { animation: glitch 0.4s; }
+
+  /* Scanline effect on cards */
+  .script-card::after {
+    content:'';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.03) 2px, rgba(0,0,0,0.03) 4px);
+    pointer-events: none;
+  }
+
+  /* Pulse dot for "new" */
+  .pulse-dot {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 0 0 rgba(0,255,136,0.4);
+    animation: pulse 2s infinite;
+    margin-right: 4px;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(0,255,136,0.4); }
+    70% { box-shadow: 0 0 0 6px rgba(0,255,136,0); }
+    100% { box-shadow: 0 0 0 0 rgba(0,255,136,0); }
+  }
+
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; pointer-events: none; }
+
+  /* Tab switcher for login/register */
+  .tab-bar {
+    display: flex;
+    border-bottom: 1px solid var(--card-border);
+    margin-bottom: 24px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 10px;
+    background: none;
+    border: none;
+    font-family: 'Orbitron', monospace;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+  }
 </style>
 </head>
 <body>
 
 <!-- NAVBAR -->
-<nav class="navbar" id="navbar">
-  <a href="#" class="nav-brand" onclick="event.preventDefault();resetFilters()">
-    <i class="fa-solid fa-terminal"></i> ByteZ Scripts
-  </a>
-  <div class="nav-center">
-    <div class="search-box">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input type="text" id="searchInput" placeholder="Buscar scripts..." oninput="handleSearch()">
+<nav>
+  <a class="logo" href="#" onclick="scrollToTop()">BYTEZ<span>HUB</span></a>
+  <div class="nav-right">
+    <div id="navUser" style="display:none" class="nav-user">
+      <div class="avatar" id="avatarInitial">?</div>
+      <span id="navUsername">user</span>
     </div>
+    <button class="btn btn-primary" id="btnPostScript" onclick="openPostModal()" style="display:none">+ POST SCRIPT</button>
+    <button class="btn btn-secondary" id="btnLogin" onclick="openAuthModal()">LOGIN</button>
+    <button class="btn btn-danger" id="btnLogout" onclick="logoutUser()" style="display:none">SAIR</button>
   </div>
-  <div class="nav-right" id="navRight"></div>
 </nav>
 
-<!-- HERO -->
-<section class="hero">
-  <h1>Explore os melhores<br><span>Scripts Lua</span></h1>
-  <p>Encontre, compartilhe e copie scripts para seus projetos. Comunidade aberta para todos.</p>
-  <div class="stats-row">
-    <div class="stat">
-      <div class="stat-num" id="totalScripts">0</div>
-      <div class="stat-label">Scripts</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num" id="totalLikes">0</div>
-      <div class="stat-label">Curtidas</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num" id="totalViews">0</div>
-      <div class="stat-label">Visualizações</div>
+<!-- MAIN WRAPPER -->
+<div class="wrapper">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-eyebrow">⚡ ROBLOX LUA SCRIPT HUB</div>
+    <h1>BYTEZ HUB</h1>
+    <p class="hero-sub">Scripts Lua para Roblox • Grátis • Sempre Atualizado</p>
+    <div class="stats-bar">
+      <div class="stat-item">
+        <div class="stat-num" id="totalScripts">0</div>
+        <div class="stat-label">Scripts</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="totalLikes">0</div>
+        <div class="stat-label">Likes</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-num" id="totalViews">0</div>
+        <div class="stat-label">Views</div>
+      </div>
     </div>
   </div>
-</section>
 
-<!-- FILTERS -->
-<div class="filters">
-  <div class="realtime-badge"><span class="status-dot online"></span> Tempo Real</div>
-  <button class="filter-btn active" data-filter="recent" onclick="setFilter('recent')">
-    <i class="fa-solid fa-clock"></i> Recentes
-  </button>
-  <button class="filter-btn" data-filter="popular" onclick="setFilter('popular')">
-    <i class="fa-solid fa-fire"></i> Populares
-  </button>
-  <button class="filter-btn" data-filter="most-viewed" onclick="setFilter('most-viewed')">
-    <i class="fa-solid fa-eye"></i> Mais Vistos
-  </button>
-  <button class="filter-btn" data-filter="mine" onclick="setFilter('mine')" id="filterMine" style="display:none">
-    <i class="fa-solid fa-user"></i> Meus Scripts
-  </button>
-</div>
-
-<!-- SCRIPTS GRID -->
-<div class="container">
-  <div class="scripts-grid" id="scriptsGrid">
-    <div class="loader"><div class="spinner"></div></div>
+  <!-- SEARCH -->
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input type="text" id="searchInput" placeholder="Buscar scripts por nome ou descrição..." oninput="filterScripts()">
   </div>
+
+  <!-- SECTION HEADER -->
+  <div class="section-header">
+    <div class="section-title">Scripts Disponíveis</div>
+    <div class="script-count"><span class="pulse-dot"></span><span id="scriptCountLabel">0 scripts</span></div>
+  </div>
+
+  <!-- SCRIPTS GRID -->
+  <div id="scriptsGrid">
+    <div class="loading-state"><div class="spinner"></div><br><br>Carregando scripts...</div>
+  </div>
+
 </div>
 
-<!-- AUTH MODAL -->
+<!-- TOAST -->
+<div id="toast">
+  <span id="toastIcon">✓</span>
+  <span id="toastMsg">Copiado!</span>
+</div>
+
+<!-- ========== MODAL: AUTH ========== -->
 <div class="modal-overlay" id="authModal">
   <div class="modal">
-    <div class="modal-header">
-      <h2 id="authTitle">Entrar</h2>
-      <button class="modal-close" onclick="closeModal('authModal')"><i class="fa-solid fa-xmark"></i></button>
+    <button class="modal-close" onclick="closeModal('authModal')">✕</button>
+    <div class="tab-bar">
+      <button class="tab-btn active" id="tabLogin" onclick="switchTab('login')">LOGIN</button>
+      <button class="tab-btn" id="tabRegister" onclick="switchTab('register')">CADASTRO</button>
     </div>
-    <div class="modal-body">
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Login</button>
-        <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Cadastro</button>
+
+    <!-- LOGIN FORM -->
+    <div id="loginForm">
+      <div class="error-msg" id="loginError"></div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="loginEmail" placeholder="seu@email.com">
       </div>
-      <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="loginEmail" placeholder="seu@email.com" required>
-        </div>
-        <div class="form-group">
-          <label>Senha</label>
-          <input type="password" id="loginPassword" placeholder="••••••••" required minlength="6">
-        </div>
-        <button type="submit" class="submit-btn" id="loginBtn">
-          <i class="fa-solid fa-right-to-bracket"></i> Entrar
-        </button>
-      </form>
-      <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
-        <div class="form-group">
-          <label>Nome de Usuário</label>
-          <input type="text" id="regUsername" placeholder="ByteZMaster" required minlength="3" maxlength="20">
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="regEmail" placeholder="seu@email.com" required>
-        </div>
-        <div class="form-group">
-          <label>Senha</label>
-          <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
-        </div>
-        <button type="submit" class="submit-btn" id="regBtn">
-          <i class="fa-solid fa-user-plus"></i> Criar Conta
-        </button>
-      </form>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" type="password" id="loginPass" placeholder="••••••••">
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-primary" id="loginBtn" onclick="loginUser()">ENTRAR</button>
+      </div>
+    </div>
+
+    <!-- REGISTER FORM -->
+    <div id="registerForm" style="display:none">
+      <div class="error-msg" id="registerError"></div>
+      <div class="success-msg" id="registerSuccess"></div>
+      <div class="form-group">
+        <label class="form-label">Nome de usuário</label>
+        <input class="form-input" type="text" id="regUsername" placeholder="SeuNick123" maxlength="20">
+        <div class="form-hint">Apenas letras e números, sem espaços</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <input class="form-input" type="email" id="regEmail" placeholder="seu@email.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <input class="form-input" type="password" id="regPass" placeholder="Min. 6 caracteres">
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-secondary" id="registerBtn" onclick="registerUser()">CRIAR CONTA</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- POST MODAL -->
+<!-- ========== MODAL: POST SCRIPT ========== -->
 <div class="modal-overlay" id="postModal">
-  <div class="modal modal-lg">
-    <div class="modal-header">
-      <h2><i class="fa-solid fa-plus"></i> Novo Script</h2>
-      <button class="modal-close" onclick="closeModal('postModal')"><i class="fa-solid fa-xmark"></i></button>
+  <div class="modal modal-wide">
+    <button class="modal-close" onclick="closeModal('postModal')">✕</button>
+    <h2>POSTAR SCRIPT</h2>
+    <p class="modal-sub">Compartilhe seu script com a comunidade</p>
+    <div class="error-msg" id="postError"></div>
+    <div class="form-group">
+      <label class="form-label">Título do Script</label>
+      <input class="form-input" type="text" id="postTitle" placeholder="ex: OP Admin Script 2025" maxlength="60">
     </div>
-    <div class="modal-body">
-      <form id="postForm" onsubmit="handlePost(event)">
-        <div class="form-group">
-          <label>Título do Script</label>
-          <input type="text" id="postTitle" placeholder="Ex: Infinite Yield Admin" required maxlength="80">
-        </div>
-        <div class="form-group">
-          <label>Descrição</label>
-          <input type="text" id="postDesc" placeholder="O que este script faz?" required maxlength="200">
-        </div>
-        <div class="form-group">
-          <label><i class="fa-solid fa-code"></i> Código Lua</label>
-          <textarea id="postCode" class="code-input" placeholder='loadstring(game:HttpGet("https://pastefy.app/xxxxx/raw"))()' required></textarea>
-        </div>
-        <button type="submit" class="submit-btn" id="postBtn">
-          <i class="fa-solid fa-paper-plane"></i> Publicar Script
-        </button>
-      </form>
+    <div class="form-group">
+      <label class="form-label">Descrição</label>
+      <input class="form-input" type="text" id="postDesc" placeholder="Descreva o que o script faz..." maxlength="120">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Código Lua / Loadstring</label>
+      <textarea class="form-textarea" id="postCode" rows="6" placeholder="loadstring(game:HttpGet('https://...'))()"></textarea>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-secondary" onclick="closeModal('postModal')">CANCELAR</button>
+      <button class="btn btn-success" id="submitBtn" onclick="submitScript()">PUBLICAR</button>
     </div>
   </div>
 </div>
 
-<!-- VIEW MODAL -->
+<!-- ========== MODAL: VIEW SCRIPT ========== -->
 <div class="modal-overlay" id="viewModal">
-  <div class="modal modal-lg">
-    <div class="modal-header">
-      <h2><i class="fa-solid fa-code"></i> Detalhes do Script</h2>
-      <button class="modal-close" onclick="closeModal('viewModal')"><i class="fa-solid fa-xmark"></i></button>
+  <div class="modal modal-wide">
+    <button class="modal-close" onclick="closeModal('viewModal')">✕</button>
+    <h2 id="viewTitle">Script Title</h2>
+    <p class="modal-sub" id="viewDesc">description</p>
+    <div class="script-info-grid">
+      <div class="info-item">👤 Autor: <span id="viewAuthor">-</span></div>
+      <div class="info-item">📅 Data: <span id="viewDate">-</span></div>
+      <div class="info-item">👁 Views: <span id="viewViews">-</span></div>
+      <div class="info-item">❤️ Likes: <span id="viewLikes">-</span></div>
     </div>
-    <div class="modal-body" id="viewBody"></div>
+    <div class="script-full-code" id="viewCode"></div>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+      <button class="btn btn-primary" onclick="copyViewScript()">📋 COPIAR SCRIPT</button>
+      <button class="like-btn" id="likeBtn" onclick="toggleLike()">
+        <span>❤️</span> <span id="likeBtnCount">0</span>
+      </button>
+      <button class="btn btn-danger" id="deleteBtn" onclick="deleteCurrentScript()" style="display:none">🗑 DELETAR</button>
+    </div>
   </div>
 </div>
 
-<!-- TOASTS -->
-<div class="toast-container" id="toastContainer"></div>
+<!-- FIREBASE SDK -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+  import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, getDocs, getDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp, arrayUnion, arrayRemove, increment } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
 
-<!-- STATUS BAR -->
-<div class="status-bar">
-  <div>
-    <span class="status-dot online" id="statusDot"></span>
-    <span id="statusText">Conectado ao Firebase</span>
-  </div>
-  <div id="statusUser">Visitante</div>
-</div>
-
-<!-- ══════════════════════════ JAVASCRIPT ══════════════════════════ -->
-<script>
-// ══════════════════════════════════════════
-//  FIREBASE INIT
-// ══════════════════════════════════════════
-var firebaseConfig = {
-  apiKey: "AIzaSyDbmJbhYLofmkF99TwhF_skc_iAnwBTNPY",
-  authDomain: "bytez-script.firebaseapp.com",
-  projectId: "bytez-script",
-  storageBucket: "bytez-script.firebasestorage.app",
-  messagingSenderId: "716754895227",
-  appId: "1:716754895227:web:f661b3dbfd25df9b6bfdde"
-};
-
-firebase.initializeApp(firebaseConfig);
-var auth = firebase.auth();
-var db = firebase.firestore();
-
-// Ativar persistência offline (cache local)
-db.enablePersistence().catch(function(err) {
-  console.log('Persistência offline não disponível:', err.code);
-});
-
-// ══════════════════════════════════════════
-//  ESTADO GLOBAL
-// ══════════════════════════════════════════
-var currentUser = null;
-var currentUsername = '';
-var allScripts = [];
-var currentFilter = 'recent';
-var searchQuery = '';
-var unsubscribeListener = null; // Listener em tempo real
-
-// ══════════════════════════════════════════
-//  AUTH — OBSERVADOR DE LOGIN
-// ══════════════════════════════════════════
-auth.onAuthStateChanged(function(user) {
-  currentUser = user;
-
-  if (user) {
-    // Buscar nome de usuário no Firestore
-    db.collection('users').doc(user.uid).get().then(function(doc) {
-      if (doc.exists) {
-        currentUsername = doc.data().username;
-      } else {
-        currentUsername = user.email.split('@')[0];
-      }
-      renderNav();
-      document.getElementById('statusUser').textContent = currentUsername;
-    }).catch(function() {
-      currentUsername = user.email.split('@')[0];
-      renderNav();
-    });
-  } else {
-    currentUsername = '';
-    renderNav();
-    document.getElementById('statusUser').textContent = 'Visitante';
-  }
-
-  // Iniciar listener em tempo real
-  startRealtimeListener();
-});
-
-// ══════════════════════════════════════════
-//  NAVBAR
-// ══════════════════════════════════════════
-function renderNav() {
-  var nav = document.getElementById('navRight');
-  var filterMine = document.getElementById('filterMine');
-
-  if (currentUser) {
-    var initial = currentUsername ? currentUsername.charAt(0).toUpperCase() : '?';
-    nav.innerHTML =
-      '<div class="user-area">' +
-        '<div class="user-avatar">' + initial + '</div>' +
-        '<span class="user-name">' + escapeHtml(currentUsername) + '</span>' +
-      '</div>' +
-      '<button class="nav-btn nav-btn-primary" onclick="openModal(\'postModal\')">' +
-        '<i class="fa-solid fa-plus"></i><span class="btn-text"> Postar</span>' +
-      '</button>' +
-      '<button class="nav-btn nav-btn-danger" onclick="handleLogout()" title="Sair">' +
-        '<i class="fa-solid fa-right-from-bracket"></i>' +
-      '</button>';
-    filterMine.style.display = '';
-  } else {
-    nav.innerHTML =
-      '<button class="nav-btn nav-btn-outline" onclick="openModal(\'authModal\')">' +
-        '<i class="fa-solid fa-right-to-bracket"></i><span class="btn-text"> Entrar</span>' +
-      '</button>' +
-      '<button class="nav-btn nav-btn-primary" onclick="openAuthRegister()">' +
-        '<i class="fa-solid fa-user-plus"></i><span class="btn-text"> Cadastro</span>' +
-      '</button>';
-    filterMine.style.display = 'none';
-    if (currentFilter === 'mine') setFilter('recent');
-  }
-}
-
-// ══════════════════════════════════════════
-//  AUTH — LOGIN
-// ══════════════════════════════════════════
-function handleLogin(e) {
-  e.preventDefault();
-  var btn = document.getElementById('loginBtn');
-  var email = document.getElementById('loginEmail').value.trim();
-  var pass = document.getElementById('loginPassword').value;
-
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Entrando...';
-
-  auth.signInWithEmailAndPassword(email, pass)
-    .then(function() {
-      toast('Login realizado com sucesso!', 'success');
-      closeModal('authModal');
-      document.getElementById('loginForm').reset();
-    })
-    .catch(function(err) {
-      toast(firebaseError(err.code), 'error');
-    })
-    .finally(function() {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
-    });
-}
-
-// ══════════════════════════════════════════
-//  AUTH — CADASTRO
-// ══════════════════════════════════════════
-function handleRegister(e) {
-  e.preventDefault();
-  var btn = document.getElementById('regBtn');
-  var username = document.getElementById('regUsername').value.trim();
-  var email = document.getElementById('regEmail').value.trim();
-  var pass = document.getElementById('regPassword').value;
-
-  if (username.length < 3) {
-    toast('Nome deve ter pelo menos 3 caracteres.', 'error');
-    return;
-  }
-
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Criando conta...';
-
-  auth.createUserWithEmailAndPassword(email, pass)
-    .then(function(cred) {
-      // Salvar perfil do usuário no Firestore
-      return db.collection('users').doc(cred.user.uid).set({
-        username: username,
-        email: email,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      });
-    })
-    .then(function() {
-      toast('Conta criada! Bem-vindo, ' + username + '!', 'success');
-      closeModal('authModal');
-      document.getElementById('registerForm').reset();
-    })
-    .catch(function(err) {
-      toast(firebaseError(err.code), 'error');
-    })
-    .finally(function() {
-      btn.disabled = false;
-      btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Criar Conta';
-    });
-}
-
-// ══════════════════════════════════════════
-//  AUTH — LOGOUT
-// ══════════════════════════════════════════
-function handleLogout() {
-  auth.signOut().then(function() {
-    toast('Você saiu da conta.', 'info');
-  });
-}
-
-// ══════════════════════════════════════════
-//  AUTH — TABS
-// ══════════════════════════════════════════
-function switchAuthTab(tab) {
-  document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
-  document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
-  document.getElementById('tabLogin').classList.toggle('active', tab === 'login');
-  document.getElementById('tabRegister').classList.toggle('active', tab === 'register');
-  document.getElementById('authTitle').textContent = tab === 'login' ? 'Entrar' : 'Criar Conta';
-}
-
-function openAuthRegister() {
-  openModal('authModal');
-  switchAuthTab('register');
-}
-
-function firebaseError(code) {
-  var errors = {
-    'auth/user-not-found': 'Usuário não encontrado.',
-    'auth/wrong-password': 'Senha incorreta.',
-    'auth/email-already-in-use': 'Este email já está em uso.',
-    'auth/weak-password': 'Senha deve ter pelo menos 6 caracteres.',
-    'auth/invalid-email': 'Email inválido.',
-    'auth/too-many-requests': 'Muitas tentativas. Aguarde.',
-    'auth/invalid-credential': 'Email ou senha incorretos.'
+  const firebaseConfig = {
+    apiKey: "AIzaSyDbmJbhYLofmkF99TwhF_skc_iAnwBTNPY",
+    authDomain: "bytez-script.firebaseapp.com",
+    projectId: "bytez-script",
+    storageBucket: "bytez-script.firebasestorage.app",
+    messagingSenderId: "716754895227",
+    appId: "1:716754895227:web:f661b3dbfd25df9b6bfdde"
   };
-  return errors[code] || 'Erro: ' + code;
-}
 
-// ══════════════════════════════════════════
-//  SCRIPTS — LISTENER EM TEMPO REAL
-//  (Atualiza automaticamente quando alguém
-//   posta, deleta ou altera um script)
-// ══════════════════════════════════════════
-function startRealtimeListener() {
-  // Desconectar listener anterior
-  if (unsubscribeListener) {
-    unsubscribeListener();
-  }
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
 
-  var query = db.collection('scripts');
+  // ---- STATE ----
+  let currentUser = null;
+  let allScripts = [];
+  let currentScriptId = null;
 
-  if (currentFilter === 'popular') {
-    query = query.orderBy('likes', 'desc');
-  } else if (currentFilter === 'most-viewed') {
-    query = query.orderBy('views', 'desc');
-  } else {
-    query = query.orderBy('createdAt', 'desc');
-  }
+  // ---- EXPOSE FUNCTIONS GLOBALLY ----
+  window._fb = { auth, db, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, collection, addDoc, getDocs, getDoc, updateDoc, deleteDoc, doc, query, orderBy, serverTimestamp, arrayUnion, arrayRemove, increment };
 
-  query = query.limit(200);
-
-  var grid = document.getElementById('scriptsGrid');
-  grid.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
-
-  // onSnapshot = TEMPO REAL — recebe atualizações automáticas
-  unsubscribeListener = query.onSnapshot(function(snapshot) {
-    allScripts = [];
-    snapshot.forEach(function(doc) {
-      var data = doc.data();
-      data.id = doc.id;
-      allScripts.push(data);
-    });
-
-    updateStats();
-    renderScripts();
-
-    // Atualizar status
-    document.getElementById('statusDot').className = 'status-dot online';
-    document.getElementById('statusText').textContent =
-      'Conectado — ' + allScripts.length + ' scripts online';
-
-  }, function(error) {
-    console.error('Erro no listener:', error);
-    document.getElementById('statusDot').className = 'status-dot offline';
-    document.getElementById('statusText').textContent = 'Erro de conexão';
-
-    // Fallback: carregar uma vez
-    loadScriptsFallback();
+  // ---- AUTH STATE OBSERVER ----
+  onAuthStateChanged(auth, (user) => {
+    currentUser = user;
+    if (user) {
+      document.getElementById('navUser').style.display = 'flex';
+      document.getElementById('navUsername').textContent = user.displayName || user.email.split('@')[0];
+      document.getElementById('avatarInitial').textContent = (user.displayName || user.email)[0].toUpperCase();
+      document.getElementById('btnLogin').style.display = 'none';
+      document.getElementById('btnLogout').style.display = '';
+      document.getElementById('btnPostScript').style.display = '';
+      closeModal('authModal');
+    } else {
+      document.getElementById('navUser').style.display = 'none';
+      document.getElementById('btnLogin').style.display = '';
+      document.getElementById('btnLogout').style.display = 'none';
+      document.getElementById('btnPostScript').style.display = 'none';
+    }
+    loadScripts();
   });
-}
 
-// Fallback caso onSnapshot falhe
-function loadScriptsFallback() {
-  var grid = document.getElementById('scriptsGrid');
-  db.collection('scripts').orderBy('createdAt', 'desc').limit(200).get()
-    .then(function(snapshot) {
+  // ---- LOAD SCRIPTS ----
+  async function loadScripts() {
+    try {
+      const q = query(collection(db, 'scripts'), orderBy('createdAt', 'desc'));
+      const snapshot = await getDocs(q);
       allScripts = [];
-      snapshot.forEach(function(doc) {
-        var data = doc.data();
-        data.id = doc.id;
-        allScripts.push(data);
+      let totalLikes = 0;
+      let totalViews = 0;
+      snapshot.forEach(d => {
+        allScripts.push({ id: d.id, ...d.data() });
+        totalLikes += (d.data().likes || []).length;
+        totalViews += (d.data().views || 0);
       });
-      updateStats();
-      renderScripts();
-    })
-    .catch(function(err) {
-      grid.innerHTML =
-        '<div class="empty-state">' +
-          '<i class="fa-solid fa-triangle-exclamation"></i>' +
-          '<h3>Erro ao conectar</h3>' +
-          '<p>' + err.message + '</p>' +
-          '<p style="margin-top:10px;color:var(--accent);font-size:.8rem">' +
-            'Verifique se o Firestore está ativado no Firebase Console' +
-          '</p>' +
-        '</div>';
-    });
-}
-
-// ══════════════════════════════════════════
-//  SCRIPTS — ATUALIZAR ESTATÍSTICAS
-// ══════════════════════════════════════════
-function updateStats() {
-  var totalLikes = 0;
-  var totalViews = 0;
-  allScripts.forEach(function(s) {
-    totalLikes += s.likes || 0;
-    totalViews += s.views || 0;
-  });
-  document.getElementById('totalScripts').textContent = allScripts.length;
-  document.getElementById('totalLikes').textContent = totalLikes;
-  document.getElementById('totalViews').textContent = totalViews;
-}
-
-// ══════════════════════════════════════════
-//  SCRIPTS — RENDERIZAR CARDS
-// ══════════════════════════════════════════
-function renderScripts() {
-  var grid = document.getElementById('scriptsGrid');
-  var list = allScripts.slice();
-
-  // Filtro "Meus Scripts"
-  if (currentFilter === 'mine' && currentUser) {
-    list = list.filter(function(s) {
-      return s.authorId === currentUser.uid;
-    });
+      document.getElementById('totalScripts').textContent = allScripts.length;
+      document.getElementById('totalLikes').textContent = totalLikes;
+      document.getElementById('totalViews').textContent = totalViews;
+      renderScripts(allScripts);
+    } catch (e) {
+      console.error(e);
+      document.getElementById('scriptsGrid').innerHTML = '<div class="empty-state"><div class="empty-icon">⚠️</div><h3>Erro ao carregar</h3><p>Verifique as configurações do Firebase</p></div>';
+    }
   }
+  window.loadScripts = loadScripts;
 
-  // Busca
-  if (searchQuery) {
-    var q = searchQuery.toLowerCase();
-    list = list.filter(function(s) {
-      return (s.title || '').toLowerCase().indexOf(q) !== -1 ||
-             (s.description || '').toLowerCase().indexOf(q) !== -1 ||
-             (s.author || '').toLowerCase().indexOf(q) !== -1;
-    });
+  function renderScripts(scripts) {
+    const grid = document.getElementById('scriptsGrid');
+    document.getElementById('scriptCountLabel').textContent = scripts.length + ' script' + (scripts.length !== 1 ? 's' : '');
+    if (!scripts.length) {
+      grid.innerHTML = '<div class="empty-state"><div class="empty-icon">📭</div><h3>NENHUM SCRIPT ENCONTRADO</h3><p>Seja o primeiro a postar um script!</p></div>';
+      return;
+    }
+    grid.innerHTML = scripts.map(s => {
+      const date = s.createdAt ? new Date(s.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : '—';
+      const likes = (s.likes || []).length;
+      const views = s.views || 0;
+      const isNew = s.createdAt && (Date.now() - s.createdAt.seconds * 1000) < 86400000 * 3;
+      return `
+      <div class="script-card" onclick="openViewModal('${s.id}')">
+        <div class="card-header">
+          <div class="card-title">${escHtml(s.title)}</div>
+          <div class="card-badges">
+            <span class="badge badge-lua">LUA</span>
+            ${isNew ? '<span class="badge badge-new">NEW</span>' : ''}
+          </div>
+        </div>
+        <div class="card-desc">${escHtml(s.description || '')}</div>
+        <div class="card-code-preview">${escHtml(s.code || '')}</div>
+        <div class="card-meta">
+          <div class="card-meta-left">
+            <div class="meta-item">👤 ${escHtml(s.author || 'anon')}</div>
+            <div class="meta-item">📅 ${date}</div>
+          </div>
+          <div class="card-meta-left">
+            <div class="meta-item">❤️ ${likes}</div>
+            <div class="meta-item">👁 ${views}</div>
+          </div>
+        </div>
+        <div class="card-actions" onclick="event.stopPropagation()">
+          <button class="btn btn-primary" onclick="copyScript('${s.id}')">📋 COPIAR</button>
+          <button class="btn btn-secondary" onclick="openViewModal('${s.id}')">👁 VER</button>
+        </div>
+      </div>`;
+    }).join('');
   }
+  window.renderScripts = renderScripts;
+  window.allScripts = allScripts;
 
-  if (list.length === 0) {
-    grid.innerHTML =
-      '<div class="empty-state">' +
-        '<i class="fa-solid fa-folder-open"></i>' +
-        '<h3>Nenhum script encontrado</h3>' +
-        '<p>' + (searchQuery ? 'Tente outra busca.' : 'Seja o primeiro a publicar um script!') + '</p>' +
-      '</div>';
-    return;
-  }
-
-  var html = '';
-  list.forEach(function(s, i) {
-    var date = s.createdAt ? formatDate(s.createdAt) : 'Agora';
-    var liked = currentUser && s.likedBy && s.likedBy.indexOf(currentUser.uid) !== -1;
-    var isOwner = currentUser && s.authorId === currentUser.uid;
-    var codePreview = escapeHtml((s.code || '').substring(0, 160));
-    var sid = s.id;
-
-    html +=
-      '<div class="script-card" style="animation-delay:' + (i * 0.05) + 's">' +
-        '<div class="card-header">' +
-          '<div class="card-title">' + escapeHtml(s.title) + '</div>' +
-          '<div class="card-badge">LUA</div>' +
-        '</div>' +
-        '<div class="card-desc">' + escapeHtml(s.description) + '</div>' +
-        '<div class="card-code">' + codePreview + '</div>' +
-        '<div class="card-meta">' +
-          '<div>' +
-            '<span class="card-author"><i class="fa-solid fa-user"></i> ' + escapeHtml(s.author) + '</span>' +
-            '<span class="card-date" style="margin-left:12px"><i class="fa-regular fa-calendar"></i> ' + date + '</span>' +
-          '</div>' +
-          '<div class="card-stats">' +
-            '<span><i class="fa-solid fa-eye"></i> ' + (s.views || 0) + '</span>' +
-            '<span><i class="fa-solid fa-heart"></i> ' + (s.likes || 0) + '</span>' +
-          '</div>' +
-        '</div>' +
-        '<div class="card-actions">' +
-          '<button class="action-btn btn-copy" onclick="copyScript(\'' + sid + '\')">' +
-            '<i class="fa-regular fa-copy"></i> Copiar</button>' +
-          '<button class="action-btn btn-view" onclick="viewScript(\'' + sid + '\')">' +
-            '<i class="fa-solid fa-expand"></i> Ver</button>' +
-          '<button class="action-btn btn-like ' + (liked ? 'liked' : '') + '" onclick="toggleLike(\'' + sid + '\')">' +
-            '<i class="fa-solid fa-heart"></i> ' + (s.likes || 0) + '</button>' +
-          (isOwner ?
-            '<button class="action-btn btn-delete" onclick="deleteScript(\'' + sid + '\')" title="Deletar">' +
-              '<i class="fa-solid fa-trash"></i></button>' : '') +
-        '</div>' +
-      '</div>';
-  });
-
-  grid.innerHTML = html;
-}
-
-// ══════════════════════════════════════════
-//  SCRIPTS — PUBLICAR NOVO SCRIPT
-// ══════════════════════════════════════════
-function handlePost(e) {
-  e.preventDefault();
-
-  if (!currentUser) {
-    toast('Você precisa fazer login para postar!', 'error');
-    closeModal('postModal');
-    openModal('authModal');
-    return;
-  }
-
-  var btn = document.getElementById('postBtn');
-  var title = document.getElementById('postTitle').value.trim();
-  var desc = document.getElementById('postDesc').value.trim();
-  var code = document.getElementById('postCode').value;
-
-  if (!title || !desc || !code) {
-    toast('Preencha todos os campos!', 'error');
-    return;
-  }
-
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publicando...';
-
-  // Salvar no Firestore (banco de dados online)
-  db.collection('scripts').add({
-    title: title,
-    description: desc,
-    code: code,
-    author: currentUsername,
-    authorId: currentUser.uid,
-    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-    views: 0,
-    likes: 0,
-    likedBy: []
-  })
-  .then(function(docRef) {
-    toast('Script publicado com sucesso! ID: ' + docRef.id, 'success');
-    closeModal('postModal');
-    document.getElementById('postForm').reset();
-    // O listener em tempo real (onSnapshot) vai atualizar a lista automaticamente!
-  })
-  .catch(function(err) {
-    console.error('Erro ao publicar:', err);
-    toast('Erro ao publicar: ' + err.message, 'error');
-  })
-  .finally(function() {
-    btn.disabled = false;
-    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Publicar Script';
-  });
-}
-
-// ══════════════════════════════════════════
-//  SCRIPTS — COPIAR
-// ══════════════════════════════════════════
-function copyScript(id) {
-  var script = findScript(id);
-  if (!script) return;
-
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(script.code).then(function() {
-      toast('Script copiado para a área de transferência!', 'success');
-    }).catch(function() {
-      fallbackCopy(script.code);
-    });
-  } else {
-    fallbackCopy(script.code);
-  }
-}
-
-function fallbackCopy(text) {
-  var ta = document.createElement('textarea');
-  ta.value = text;
-  ta.style.position = 'fixed';
-  ta.style.opacity = '0';
-  document.body.appendChild(ta);
-  ta.select();
-  document.execCommand('copy');
-  document.body.removeChild(ta);
-  toast('Script copiado!', 'success');
-}
-
-// ══════════════════════════════════════════
-//  SCRIPTS — VER DETALHES
-// ══════════════════════════════════════════
-function viewScript(id) {
-  var script = findScript(id);
-  if (!script) return;
-
-  // Incrementar visualização no banco
-  db.collection('scripts').doc(id).update({
-    views: firebase.firestore.FieldValue.increment(1)
-  }).catch(function() { /* ok */ });
-
-  var date = script.createdAt ? formatDate(script.createdAt) : 'Agora';
-  var liked = currentUser && script.likedBy && script.likedBy.indexOf(currentUser.uid) !== -1;
-
-  document.getElementById('viewBody').innerHTML =
-    '<div class="view-title">' + escapeHtml(script.title) + '</div>' +
-    '<div class="view-meta">' +
-      '<span><i class="fa-solid fa-user" style="color:var(--accent3)"></i> ' + escapeHtml(script.author) + '</span>' +
-      '<span><i class="fa-regular fa-calendar"></i> ' + date + '</span>' +
-      '<span><i class="fa-solid fa-eye" style="color:var(--accent2)"></i> ' + ((script.views || 0) + 1) + ' views</span>' +
-      '<span><i class="fa-solid fa-heart" style="color:var(--danger)"></i> ' + (script.likes || 0) + ' likes</span>' +
-    '</div>' +
-    '<div class="view-desc">' + escapeHtml(script.description) + '</div>' +
-    '<div class="view-code-header">' +
-      '<span><i class="fa-solid fa-code"></i> Código Lua</span>' +
-      '<button class="action-btn btn-copy" onclick="copyScript(\'' + id + '\')" ' +
-        'style="flex:unset;padding:6px 14px;font-size:.8rem">' +
-        '<i class="fa-regular fa-copy"></i> Copiar</button>' +
-    '</div>' +
-    '<div class="view-code-block">' + escapeHtml(script.code) + '</div>' +
-    '<div class="view-actions">' +
-      '<button class="action-btn btn-like ' + (liked ? 'liked' : '') + '" ' +
-        'onclick="toggleLike(\'' + id + '\');closeModal(\'viewModal\')">' +
-        '<i class="fa-solid fa-heart"></i> ' + (liked ? 'Descurtir' : 'Curtir') +
-        ' (' + (script.likes || 0) + ')</button>' +
-      '<button class="action-btn btn-copy" onclick="copyScript(\'' + id + '\')">' +
-        '<i class="fa-regular fa-copy"></i> Copiar Script</button>' +
-    '</div>';
-
-  openModal('viewModal');
-}
-
-// ══════════════════════════════════════════
-//  SCRIPTS — CURTIR / DESCURTIR
-// ══════════════════════════════════════════
-function toggleLike(id) {
-  if (!currentUser) {
-    toast('Faça login para curtir!', 'error');
-    return;
-  }
-
-  var script = findScript(id);
-  if (!script) return;
-
-  var likedBy = script.likedBy || [];
-  var hasLiked = likedBy.indexOf(currentUser.uid) !== -1;
-
-  if (hasLiked) {
-    // Descurtir
-    db.collection('scripts').doc(id).update({
-      likes: firebase.firestore.FieldValue.increment(-1),
-      likedBy: firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
-    }).then(function() {
-      toast('Curtida removida.', 'info');
-    }).catch(function() {
-      toast('Erro ao descurtir.', 'error');
-    });
-  } else {
-    // Curtir
-    db.collection('scripts').doc(id).update({
-      likes: firebase.firestore.FieldValue.increment(1),
-      likedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
-    }).then(function() {
-      toast('Script curtido! ❤️', 'success');
-    }).catch(function() {
-      toast('Erro ao curtir.', 'error');
-    });
-  }
-  // O onSnapshot vai atualizar automaticamente!
-}
-
-// ══════════════════════════════════════════
-//  SCRIPTS — DELETAR
-// ══════════════════════════════════════════
-function deleteScript(id) {
-  if (!currentUser) return;
-
-  var script = findScript(id);
-  if (!script) return;
-
-  if (script.authorId !== currentUser.uid) {
-    toast('Você só pode deletar seus próprios scripts!', 'error');
-    return;
-  }
-
-  if (!confirm('Tem certeza que quer deletar "' + script.title + '"?')) return;
-
-  db.collection('scripts').doc(id).delete()
-    .then(function() {
-      toast('Script deletado com sucesso.', 'info');
-      // O onSnapshot vai atualizar automaticamente!
-    })
-    .catch(function(err) {
-      toast('Erro ao deletar: ' + err.message, 'error');
-    });
-}
-
-// ══════════════════════════════════════════
-//  FILTROS & BUSCA
-// ══════════════════════════════════════════
-function setFilter(filter) {
-  currentFilter = filter;
-  document.querySelectorAll('.filter-btn').forEach(function(btn) {
-    btn.classList.toggle('active', btn.dataset.filter === filter);
-  });
-
-  // Para filtros que mudam a query do Firestore,
-  // precisamos reiniciar o listener
-  if (filter === 'mine') {
-    // "Meus scripts" é filtro local, só re-renderizar
-    renderScripts();
-  } else {
-    startRealtimeListener();
-  }
-}
-
-function resetFilters() {
-  searchQuery = '';
-  document.getElementById('searchInput').value = '';
-  setFilter('recent');
-}
-
-function handleSearch() {
-  searchQuery = document.getElementById('searchInput').value.trim();
-  renderScripts();
-}
-
-// ══════════════════════════════════════════
-//  MODALS
-// ══════════════════════════════════════════
-function openModal(id) {
-  var el = document.getElementById(id);
-  el.style.display = 'flex';
-  requestAnimationFrame(function() {
-    el.classList.add('active');
-  });
-  document.body.style.overflow = 'hidden';
-}
-
-function closeModal(id) {
-  var el = document.getElementById(id);
-  el.classList.remove('active');
-  setTimeout(function() {
-    el.style.display = 'none';
-  }, 300);
-  document.body.style.overflow = '';
-}
-
-// Fechar ao clicar fora
-document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
-  overlay.addEventListener('click', function(e) {
-    if (e.target === overlay) closeModal(overlay.id);
-  });
-});
-
-// Fechar com ESC
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') {
-    ['viewModal', 'postModal', 'authModal'].forEach(function(id) {
-      var el = document.getElementById(id);
-      if (el.classList.contains('active')) closeModal(id);
-    });
-  }
-});
-
-// ══════════════════════════════════════════
-//  TOAST NOTIFICATIONS
-// ══════════════════════════════════════════
-function toast(msg, type) {
-  type = type || 'info';
-  var container = document.getElementById('toastContainer');
-  var icons = {
-    success: 'fa-circle-check',
-    error: 'fa-circle-xmark',
-    info: 'fa-circle-info'
+  // ---- FILTER ----
+  window.filterScripts = function() {
+    const q = document.getElementById('searchInput').value.toLowerCase();
+    if (!q) { renderScripts(allScripts); return; }
+    renderScripts(allScripts.filter(s =>
+      (s.title||'').toLowerCase().includes(q) ||
+      (s.description||'').toLowerCase().includes(q) ||
+      (s.author||'').toLowerCase().includes(q)
+    ));
   };
-  var el = document.createElement('div');
-  el.className = 'toast ' + type;
-  el.innerHTML = '<i class="fa-solid ' + (icons[type] || icons.info) + '"></i> ' + escapeHtml(msg);
-  container.appendChild(el);
 
-  setTimeout(function() {
-    el.style.opacity = '0';
-    el.style.transform = 'translateX(60px)';
-    el.style.transition = '.3s';
-  }, 3500);
+  // ---- COPY SCRIPT ----
+  window.copyScript = async function(id) {
+    const s = allScripts.find(x => x.id === id);
+    if (!s) return;
+    await navigator.clipboard.writeText(s.code || '').catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = s.code; document.body.appendChild(ta);
+      ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    });
+    showToast('Script copiado!', 'success');
+  };
 
-  setTimeout(function() {
-    if (el.parentNode) el.remove();
-  }, 3800);
-}
+  window.copyViewScript = async function() {
+    const s = allScripts.find(x => x.id === currentScriptId);
+    if (!s) return;
+    await navigator.clipboard.writeText(s.code || '').catch(() => {});
+    showToast('Script copiado!', 'success');
+  };
 
-// ══════════════════════════════════════════
-//  HELPERS
-// ══════════════════════════════════════════
-function escapeHtml(str) {
-  if (!str) return '';
-  var d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
-}
+  // ---- VIEW MODAL ----
+  window.openViewModal = async function(id) {
+    currentScriptId = id;
+    const s = allScripts.find(x => x.id === id);
+    if (!s) return;
+    document.getElementById('viewTitle').textContent = s.title;
+    document.getElementById('viewDesc').textContent = s.description || '';
+    document.getElementById('viewAuthor').textContent = s.author || 'anon';
+    document.getElementById('viewDate').textContent = s.createdAt ? new Date(s.createdAt.seconds * 1000).toLocaleDateString('pt-BR') : '—';
+    document.getElementById('viewCode').textContent = s.code || '';
+    const likes = (s.likes || []).length;
+    document.getElementById('viewLikes').textContent = likes;
+    document.getElementById('likeBtnCount').textContent = likes;
+    const likeBtn = document.getElementById('likeBtn');
+    likeBtn.className = 'like-btn' + (currentUser && (s.likes||[]).includes(currentUser.uid) ? ' liked' : '');
+    // Show delete btn if owner or author
+    const delBtn = document.getElementById('deleteBtn');
+    if (currentUser && (s.authorUid === currentUser.uid)) {
+      delBtn.style.display = '';
+    } else {
+      delBtn.style.display = 'none';
+    }
+    // Increment views
+    try {
+      const ref = doc(db, 'scripts', id);
+      await updateDoc(ref, { views: increment(1) });
+      s.views = (s.views || 0) + 1;
+      document.getElementById('viewViews').textContent = s.views;
+    } catch (e) {}
+    openModal('viewModal');
+  };
 
-function formatDate(ts) {
-  if (!ts) return 'Agora';
-  try {
-    var d = ts.toDate ? ts.toDate() : new Date(ts);
-    return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-  } catch(e) {
-    return 'Agora';
+  // ---- LIKE ----
+  window.toggleLike = async function() {
+    if (!currentUser) { showToast('Faça login para curtir!', 'error'); return; }
+    const s = allScripts.find(x => x.id === currentScriptId);
+    if (!s) return;
+    const ref = doc(db, 'scripts', currentScriptId);
+    const uid = currentUser.uid;
+    const liked = (s.likes || []).includes(uid);
+    try {
+      await updateDoc(ref, { likes: liked ? arrayRemove(uid) : arrayUnion(uid) });
+      s.likes = s.likes || [];
+      if (liked) { s.likes = s.likes.filter(x => x !== uid); }
+      else { s.likes.push(uid); }
+      const count = s.likes.length;
+      document.getElementById('viewLikes').textContent = count;
+      document.getElementById('likeBtnCount').textContent = count;
+      document.getElementById('likeBtn').className = 'like-btn' + (!liked ? ' liked' : '');
+      renderScripts(allScripts);
+    } catch(e) { showToast('Erro ao curtir', 'error'); }
+  };
+
+  // ---- DELETE ----
+  window.deleteCurrentScript = async function() {
+    if (!currentUser || !currentScriptId) return;
+    if (!confirm('Deletar este script? Esta ação é irreversível.')) return;
+    try {
+      await deleteDoc(doc(db, 'scripts', currentScriptId));
+      allScripts = allScripts.filter(x => x.id !== currentScriptId);
+      closeModal('viewModal');
+      renderScripts(allScripts);
+      document.getElementById('totalScripts').textContent = allScripts.length;
+      showToast('Script deletado!', 'success');
+    } catch(e) { showToast('Erro ao deletar', 'error'); }
+  };
+
+  // ---- LOGIN ----
+  window.loginUser = async function() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    const errEl = document.getElementById('loginError');
+    if (!email || !pass) { showErr(errEl, 'Preencha todos os campos'); return; }
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true; btn.textContent = 'ENTRANDO...';
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+      errEl.classList.remove('show');
+    } catch(e) {
+      showErr(errEl, translateFirebaseError(e.code));
+    } finally { btn.disabled = false; btn.textContent = 'ENTRAR'; }
+  };
+
+  // ---- REGISTER ----
+  window.registerUser = async function() {
+    const username = document.getElementById('regUsername').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const pass = document.getElementById('regPass').value;
+    const errEl = document.getElementById('registerError');
+    const succEl = document.getElementById('registerSuccess');
+    if (!username || !email || !pass) { showErr(errEl, 'Preencha todos os campos'); return; }
+    if (!/^[a-zA-Z0-9_]{3,20}$/.test(username)) { showErr(errEl, 'Username: 3-20 chars, letras/números/_'); return; }
+    const btn = document.getElementById('registerBtn');
+    btn.disabled = true; btn.textContent = 'CRIANDO...';
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await updateProfile(cred.user, { displayName: username });
+      // Save user to Firestore
+      const { setDoc } = await import("https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js");
+      await setDoc(doc(db, 'users', cred.user.uid), { username, email, createdAt: new Date() });
+      succEl.textContent = 'Conta criada com sucesso!';
+      succEl.classList.add('show');
+      errEl.classList.remove('show');
+    } catch(e) {
+      showErr(errEl, translateFirebaseError(e.code));
+    } finally { btn.disabled = false; btn.textContent = 'CRIAR CONTA'; }
+  };
+
+  // ---- LOGOUT ----
+  window.logoutUser = async function() {
+    await signOut(auth);
+    showToast('Até logo!', 'success');
+  };
+
+  // ---- SUBMIT SCRIPT ----
+  window.submitScript = async function() {
+    if (!currentUser) { showToast('Faça login primeiro!', 'error'); return; }
+    const title = document.getElementById('postTitle').value.trim();
+    const desc = document.getElementById('postDesc').value.trim();
+    const code = document.getElementById('postCode').value.trim();
+    const errEl = document.getElementById('postError');
+    if (!title || !code) { showErr(errEl, 'Título e código são obrigatórios'); return; }
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.textContent = 'PUBLICANDO...';
+    try {
+      const docRef = await addDoc(collection(db, 'scripts'), {
+        title, description: desc, code,
+        author: currentUser.displayName || currentUser.email.split('@')[0],
+        authorUid: currentUser.uid,
+        createdAt: serverTimestamp(),
+        likes: [], views: 0
+      });
+      allScripts.unshift({ id: docRef.id, title, description: desc, code, author: currentUser.displayName || currentUser.email.split('@')[0], authorUid: currentUser.uid, likes: [], views: 0, createdAt: { seconds: Date.now()/1000 } });
+      renderScripts(allScripts);
+      document.getElementById('totalScripts').textContent = allScripts.length;
+      document.getElementById('postTitle').value = '';
+      document.getElementById('postDesc').value = '';
+      document.getElementById('postCode').value = '';
+      closeModal('postModal');
+      showToast('Script publicado!', 'success');
+    } catch(e) {
+      showErr(errEl, 'Erro ao publicar: ' + e.message);
+    } finally { btn.disabled = false; btn.textContent = 'PUBLICAR'; }
+  };
+
+  // ---- HELPERS ----
+  function showErr(el, msg) { el.textContent = msg; el.classList.add('show'); }
+
+  function translateFirebaseError(code) {
+    const map = {
+      'auth/invalid-email': 'Email inválido',
+      'auth/user-not-found': 'Usuário não encontrado',
+      'auth/wrong-password': 'Senha incorreta',
+      'auth/invalid-credential': 'Email ou senha incorretos',
+      'auth/email-already-in-use': 'Email já cadastrado',
+      'auth/weak-password': 'Senha muito fraca (mín. 6 chars)',
+      'auth/too-many-requests': 'Muitas tentativas. Aguarde.',
+    };
+    return map[code] || 'Erro: ' + code;
   }
-}
+</script>
 
-function findScript(id) {
-  for (var i = 0; i < allScripts.length; i++) {
-    if (allScripts[i].id === id) return allScripts[i];
+<script>
+  // ---- MODAL HELPERS ----
+  function openModal(id) { document.getElementById(id).classList.add('open'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+  function openAuthModal() { openModal('authModal'); }
+  function openPostModal() { openModal('postModal'); }
+  function scrollToTop() { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+
+  function switchTab(tab) {
+    document.getElementById('loginForm').style.display = tab === 'login' ? '' : 'none';
+    document.getElementById('registerForm').style.display = tab === 'register' ? '' : 'none';
+    document.getElementById('tabLogin').className = 'tab-btn' + (tab === 'login' ? ' active' : '');
+    document.getElementById('tabRegister').className = 'tab-btn' + (tab === 'register' ? ' active' : '');
   }
-  return null;
-}
 
-// Navbar efeito scroll
-window.addEventListener('scroll', function() {
-  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
-});
+  function escHtml(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    document.getElementById('toastIcon').textContent = type === 'success' ? '✓' : '✗';
+    t.className = 'show ' + type;
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.className = ''; }, 2800);
+  }
+
+  // Close modal on overlay click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+
+  // ESC to close
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.open').forEach(m => m.classList.remove('open'));
+  });
+
+  // Enter key for login
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('loginPass')?.addEventListener('keydown', e => { if (e.key === 'Enter') window.loginUser?.(); });
+    document.getElementById('loginEmail')?.addEventListener('keydown', e => { if (e.key === 'Enter') window.loginUser?.(); });
+  });
 </script>
 </body>
 </html>
