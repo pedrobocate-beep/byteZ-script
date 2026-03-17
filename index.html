@@ -3,1089 +3,930 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ByteZ Scripts – Hub de Scripts Lua</title>
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
-
-<!-- Icons & Fonts -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+<title>KX Scripts — Hub de Scripts Lua</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
 <style>
-/* ─── RESET & VARIABLES ─── */
-*{margin:0;padding:0;box-sizing:border-box}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
 :root{
-  --bg:#06060c;
-  --bg2:#0c0c16;
-  --bg3:#111122;
-  --card:rgba(255,255,255,.03);
-  --card-hover:rgba(255,255,255,.06);
-  --border:rgba(255,255,255,.06);
-  --border-hover:rgba(0,255,136,.25);
-  --accent:#00ff88;
-  --accent2:#00d4ff;
-  --accent3:#7c3aed;
-  --danger:#ff4466;
-  --text:#e0e0e8;
-  --text2:#8888aa;
-  --grad:linear-gradient(135deg,#00ff88,#00d4ff);
-  --grad2:linear-gradient(135deg,#7c3aed,#00d4ff);
-  --shadow:0 8px 32px rgba(0,0,0,.4);
-  --radius:12px;
-  --radius-sm:8px;
-  --font:'Inter',sans-serif;
-  --mono:'JetBrains Mono',monospace;
-  --title:'Rajdhani',sans-serif;
+  --bg-body:#06060e;--bg-surface:#0d0d1a;--bg-card:#111126;--bg-card-hover:#16163a;
+  --accent:#8b5cf6;--accent2:#06b6d4;
+  --accent-g:linear-gradient(135deg,#8b5cf6,#6d28d9,#06b6d4);
+  --accent-g2:linear-gradient(135deg,#8b5cf6,#06b6d4);
+  --text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;
+  --border:rgba(139,92,246,.15);--border2:rgba(139,92,246,.3);
+  --success:#10b981;--error:#ef4444;--warn:#f59e0b;
+  --radius:12px;--radius-sm:8px;
+  --shadow:0 8px 32px rgba(0,0,0,.4);--glow:0 0 20px rgba(139,92,246,.3);
 }
 html{scroll-behavior:smooth}
-body{
-  font-family:var(--font);
-  background:var(--bg);
-  color:var(--text);
-  min-height:100vh;
-  overflow-x:hidden;
-  background-image:
-    linear-gradient(rgba(0,255,136,.015) 1px,transparent 1px),
-    linear-gradient(90deg,rgba(0,255,136,.015) 1px,transparent 1px);
-  background-size:60px 60px;
-}
-a{color:inherit;text-decoration:none}
-button{cursor:pointer;font-family:var(--font);border:none;outline:none}
-input,textarea{font-family:var(--font);outline:none}
-::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:var(--bg2)}
-::-webkit-scrollbar-thumb{background:var(--accent);border-radius:3px}
-
-/* ─── NAVBAR ─── */
-.navbar{
-  position:fixed;top:0;left:0;right:0;z-index:1000;
-  background:rgba(6,6,12,.85);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border);
-  padding:0 24px;height:64px;
-  display:flex;align-items:center;justify-content:space-between;
-  transition:.3s;
-}
-.navbar.scrolled{background:rgba(6,6,12,.95);box-shadow:0 4px 30px rgba(0,0,0,.5)}
-.nav-brand{
-  font-family:var(--title);font-size:1.6rem;font-weight:700;
-  background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  display:flex;align-items:center;gap:8px;
-  user-select:none;
-}
-.nav-brand i{
-  -webkit-text-fill-color:var(--accent);font-size:1.3rem;
-  filter:drop-shadow(0 0 8px rgba(0,255,136,.4));
-}
-.nav-center{flex:1;max-width:420px;margin:0 24px}
-.search-box{
-  position:relative;width:100%;
-}
-.search-box input{
-  width:100%;padding:10px 16px 10px 40px;
-  background:var(--bg3);border:1px solid var(--border);border-radius:50px;
-  color:var(--text);font-size:.9rem;transition:.3s;
-}
-.search-box input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,255,136,.1)}
-.search-box input::placeholder{color:var(--text2)}
-.search-box i{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--text2);font-size:.85rem}
-.nav-right{display:flex;align-items:center;gap:10px}
-.nav-btn{
-  padding:8px 18px;border-radius:50px;font-size:.85rem;font-weight:600;
-  transition:.3s;display:flex;align-items:center;gap:6px;
-}
-.nav-btn-outline{
-  background:transparent;border:1px solid var(--border);color:var(--text);
-}
-.nav-btn-outline:hover{border-color:var(--accent);color:var(--accent)}
-.nav-btn-primary{
-  background:var(--grad);color:#000;border:none;
-}
-.nav-btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(0,255,136,.3)}
-.user-area{display:flex;align-items:center;gap:12px}
-.user-avatar{
-  width:34px;height:34px;border-radius:50%;
-  background:var(--grad);display:flex;align-items:center;justify-content:center;
-  font-weight:700;color:#000;font-size:.85rem;
-}
-.user-name{font-weight:600;font-size:.9rem;color:var(--accent)}
-.nav-btn-danger{
-  background:transparent;border:1px solid rgba(255,68,102,.3);color:var(--danger);
-}
-.nav-btn-danger:hover{background:rgba(255,68,102,.1);border-color:var(--danger)}
-
-/* ─── HERO ─── */
-.hero{
-  padding:120px 24px 40px;text-align:center;
-  position:relative;
-}
-.hero::after{
-  content:'';position:absolute;top:60px;left:50%;transform:translateX(-50%);
-  width:600px;height:600px;
-  background:radial-gradient(circle,rgba(0,255,136,.06) 0%,transparent 70%);
-  pointer-events:none;
-}
-.hero h1{
-  font-family:var(--title);font-size:clamp(2.2rem,5vw,3.5rem);font-weight:700;
-  margin-bottom:12px;line-height:1.1;
-}
-.hero h1 span{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hero p{color:var(--text2);font-size:1.05rem;max-width:500px;margin:0 auto 30px}
-.stats-row{
-  display:flex;justify-content:center;gap:40px;flex-wrap:wrap;
-}
+body{font-family:'Inter',sans-serif;background:var(--bg-body);color:var(--text);min-height:100vh;overflow-x:hidden;line-height:1.6}
+a{color:var(--accent);text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+input,textarea,select{font-family:inherit}
+.bg-grid{position:fixed;inset:0;z-index:0;pointer-events:none;background-image:linear-gradient(rgba(139,92,246,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(139,92,246,.03) 1px,transparent 1px);background-size:60px 60px}
+.bg-glow{position:fixed;z-index:0;pointer-events:none;width:600px;height:600px;border-radius:50%;filter:blur(120px);opacity:.08}
+.bg-glow-1{top:-200px;left:-100px;background:#8b5cf6}
+.bg-glow-2{bottom:-200px;right:-100px;background:#06b6d4}
+.bg-glow-3{top:50%;left:50%;transform:translate(-50%,-50%);background:#6d28d9;width:800px;height:400px;opacity:.04}
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--bg-body)}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#7c3aed}
+.navbar{position:fixed;top:0;left:0;right:0;z-index:1000;background:rgba(6,6,14,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:0 2rem;height:70px;display:flex;align-items:center;justify-content:space-between;transition:all .3s}
+.navbar.scrolled{background:rgba(6,6,14,.95);box-shadow:0 4px 30px rgba(0,0,0,.3)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-size:1.5rem;font-weight:800;background:var(--accent-g2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:-1px}
+.nav-logo i{font-size:1.3rem;background:var(--accent-g2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.nav-search{position:relative;max-width:400px;flex:1;margin:0 2rem}
+.nav-search input{width:100%;padding:10px 16px 10px 42px;background:var(--bg-surface);border:1px solid var(--border);border-radius:50px;color:var(--text);font-size:.9rem;transition:all .3s;outline:none}
+.nav-search input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,92,246,.15)}
+.nav-search input::placeholder{color:var(--text3)}
+.nav-search i{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:.85rem}
+.nav-right{display:flex;align-items:center;gap:12px}
+.nav-user{display:flex;align-items:center;gap:10px;padding:6px 14px 6px 8px;background:var(--bg-surface);border:1px solid var(--border);border-radius:50px}
+.nav-user .avatar{width:32px;height:32px;border-radius:50%;background:var(--accent-g2);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff}
+.nav-user .uname{font-size:.85rem;font-weight:600;color:var(--text)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:var(--radius-sm);font-size:.875rem;font-weight:600;border:none;transition:all .25s;position:relative;overflow:hidden}
+.btn::after{content:'';position:absolute;inset:0;background:linear-gradient(rgba(255,255,255,.1),transparent);opacity:0;transition:opacity .25s}
+.btn:hover::after{opacity:1}
+.btn:active{transform:scale(.97)}
+.btn-primary{background:var(--accent-g2);color:#fff;box-shadow:0 4px 15px rgba(139,92,246,.3)}
+.btn-primary:hover{box-shadow:0 6px 25px rgba(139,92,246,.45);transform:translateY(-1px)}
+.btn-secondary{background:var(--bg-surface);color:var(--text);border:1px solid var(--border2)}
+.btn-secondary:hover{border-color:var(--accent);background:rgba(139,92,246,.08)}
+.btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff;box-shadow:0 4px 15px rgba(239,68,68,.3)}
+.btn-danger:hover{box-shadow:0 6px 25px rgba(239,68,68,.45)}
+.btn-success{background:linear-gradient(135deg,#10b981,#059669);color:#fff}
+.btn-ghost{background:transparent;color:var(--text2);border:1px solid transparent}
+.btn-ghost:hover{color:var(--text);background:rgba(255,255,255,.05)}
+.btn-sm{padding:7px 14px;font-size:.8rem}
+.btn-xs{padding:5px 10px;font-size:.75rem;border-radius:6px}
+.btn-icon{width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;border-radius:50%}
+.hero{padding:140px 2rem 60px;text-align:center;position:relative;z-index:1}
+.hero h1{font-size:clamp(2rem,5vw,3.5rem);font-weight:900;letter-spacing:-2px;margin-bottom:16px;background:linear-gradient(135deg,#fff 0%,#8b5cf6 50%,#06b6d4 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:heroTitle 1s ease-out}
+@keyframes heroTitle{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.hero p{font-size:1.15rem;color:var(--text2);max-width:600px;margin:0 auto 32px;animation:heroSub 1s ease-out .2s both}
+@keyframes heroSub{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.hero-stats{display:flex;justify-content:center;gap:40px;animation:heroSub 1s ease-out .4s both}
 .stat{text-align:center}
-.stat-num{
-  font-family:var(--title);font-size:2rem;font-weight:700;
-  background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
-}
-.stat-label{color:var(--text2);font-size:.8rem;text-transform:uppercase;letter-spacing:1px}
-
-/* ─── FILTERS ─── */
-.filters{
-  display:flex;align-items:center;justify-content:center;gap:8px;
-  padding:10px 24px 20px;flex-wrap:wrap;
-}
-.filter-btn{
-  padding:8px 20px;border-radius:50px;font-size:.85rem;font-weight:500;
-  background:var(--bg3);border:1px solid var(--border);color:var(--text2);
-  transition:.3s;
-}
-.filter-btn:hover{color:var(--text);border-color:rgba(255,255,255,.15)}
-.filter-btn.active{
-  background:var(--grad);color:#000;border-color:transparent;font-weight:600;
-  box-shadow:0 4px 20px rgba(0,255,136,.2);
-}
-
-/* ─── SCRIPTS GRID ─── */
-.container{max-width:1200px;margin:0 auto;padding:0 24px 60px}
-.scripts-grid{
-  display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));
-  gap:20px;
-}
-.script-card{
-  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
-  padding:24px;transition:.35s;position:relative;overflow:hidden;
-  animation:fadeUp .5s ease both;
-}
-.script-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:2px;
-  background:var(--grad);opacity:0;transition:.35s;
-}
-.script-card:hover{
-  border-color:var(--border-hover);background:var(--card-hover);
-  transform:translateY(-4px);box-shadow:0 12px 40px rgba(0,0,0,.4);
-}
+.stat-num{font-size:2rem;font-weight:800;background:var(--accent-g2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.stat-label{font-size:.8rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px}
+.section{max-width:1280px;margin:0 auto;padding:0 2rem 80px;position:relative;z-index:1}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;flex-wrap:wrap;gap:12px}
+.section-title{font-size:1.5rem;font-weight:700;display:flex;align-items:center;gap:10px}
+.section-title i{color:var(--accent)}
+.scripts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
+.script-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:24px;transition:all .3s;position:relative;overflow:hidden;display:flex;flex-direction:column;animation:cardIn .5s ease-out both}
+.script-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--accent-g2);opacity:0;transition:opacity .3s}
+.script-card:hover{border-color:var(--border2);background:var(--bg-card-hover);transform:translateY(-4px);box-shadow:var(--shadow),var(--glow)}
 .script-card:hover::before{opacity:1}
-.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
-.card-title{
-  font-family:var(--title);font-size:1.25rem;font-weight:700;
-  color:var(--text);line-height:1.3;flex:1;margin-right:10px;
-}
-.card-badge{
-  padding:3px 10px;border-radius:50px;font-size:.7rem;font-weight:600;
-  background:rgba(0,255,136,.1);color:var(--accent);border:1px solid rgba(0,255,136,.2);
-  white-space:nowrap;
-}
-.card-desc{
-  color:var(--text2);font-size:.88rem;line-height:1.5;
-  margin-bottom:16px;
-  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
-}
-.card-code{
-  background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:var(--radius-sm);
-  padding:12px 14px;margin-bottom:16px;
-  font-family:var(--mono);font-size:.78rem;color:var(--accent);
-  max-height:80px;overflow:hidden;position:relative;
-  line-height:1.5;white-space:pre-wrap;word-break:break-all;
-}
-.card-code::after{
-  content:'';position:absolute;bottom:0;left:0;right:0;height:30px;
-  background:linear-gradient(transparent,rgba(0,0,0,.6));
-}
-.card-meta{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:16px;flex-wrap:wrap;gap:8px;
-}
-.card-author{display:flex;align-items:center;gap:6px;font-size:.82rem;color:var(--text2)}
-.card-author i{color:var(--accent3);font-size:.75rem}
-.card-date{font-size:.78rem;color:var(--text2)}
-.card-stats{display:flex;align-items:center;gap:14px;font-size:.8rem;color:var(--text2)}
-.card-stats span{display:flex;align-items:center;gap:4px}
-.card-stats i{font-size:.75rem}
-.card-actions{display:flex;gap:8px;flex-wrap:wrap}
-.action-btn{
-  flex:1;min-width:0;padding:10px 12px;border-radius:var(--radius-sm);
-  font-size:.82rem;font-weight:600;transition:.3s;
-  display:flex;align-items:center;justify-content:center;gap:6px;
-}
-.btn-copy{background:rgba(0,255,136,.08);color:var(--accent);border:1px solid rgba(0,255,136,.15)}
-.btn-copy:hover{background:rgba(0,255,136,.15);border-color:rgba(0,255,136,.3)}
-.btn-view{background:rgba(0,212,255,.08);color:var(--accent2);border:1px solid rgba(0,212,255,.15)}
-.btn-view:hover{background:rgba(0,212,255,.15);border-color:rgba(0,212,255,.3)}
-.btn-like{background:rgba(124,58,237,.08);color:var(--accent3);border:1px solid rgba(124,58,237,.15)}
-.btn-like:hover{background:rgba(124,58,237,.15);border-color:rgba(124,58,237,.3)}
-.btn-like.liked{background:rgba(124,58,237,.2);border-color:rgba(124,58,237,.4);color:#a78bfa}
-.btn-delete{background:rgba(255,68,102,.08);color:var(--danger);border:1px solid rgba(255,68,102,.15)}
-.btn-delete:hover{background:rgba(255,68,102,.15);border-color:rgba(255,68,102,.3)}
-
-/* ─── EMPTY STATE ─── */
-.empty-state{
-  text-align:center;padding:80px 20px;
-  grid-column:1/-1;
-}
-.empty-state i{font-size:3rem;color:var(--text2);margin-bottom:16px;opacity:.4}
-.empty-state h3{font-family:var(--title);font-size:1.4rem;color:var(--text2);margin-bottom:8px}
-.empty-state p{color:var(--text2);font-size:.9rem;opacity:.7}
-
-/* ─── MODALS ─── */
-.modal-overlay{
-  position:fixed;top:0;left:0;right:0;bottom:0;z-index:2000;
-  background:rgba(0,0,0,.7);backdrop-filter:blur(8px);
-  display:none;align-items:center;justify-content:center;
-  padding:20px;opacity:0;transition:.3s;
-}
+@keyframes cardIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px}
+.card-title{font-size:1.1rem;font-weight:700;color:var(--text);flex:1;margin-right:10px;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.card-date{font-size:.7rem;color:var(--text3);white-space:nowrap;background:var(--bg-surface);padding:4px 10px;border-radius:20px;border:1px solid var(--border)}
+.card-desc{font-size:.85rem;color:var(--text2);margin-bottom:16px;flex:1;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-code-preview{background:var(--bg-body);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;margin-bottom:16px;font-family:'JetBrains Mono',monospace;font-size:.75rem;color:#a78bfa;max-height:72px;overflow:hidden;position:relative;line-height:1.5;white-space:pre-wrap;word-break:break-all}
+.card-code-preview::after{content:'';position:absolute;bottom:0;left:0;right:0;height:30px;background:linear-gradient(transparent,var(--bg-body))}
+.card-meta{display:flex;align-items:center;gap:16px;margin-bottom:16px;font-size:.8rem;color:var(--text3)}
+.card-meta span{display:flex;align-items:center;gap:5px}
+.card-meta i{font-size:.7rem}
+.card-actions{display:flex;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);padding-top:14px;margin-top:auto}
+.card-actions .btn{flex:1;justify-content:center;min-width:0}
+.btn-like{background:rgba(239,68,68,.08);color:#f87171;border:1px solid rgba(239,68,68,.15)}
+.btn-like:hover,.btn-like.liked{background:rgba(239,68,68,.18);border-color:rgba(239,68,68,.35);color:#ef4444}
+.btn-like.liked{font-weight:700}
+.btn-copy-card{background:rgba(16,185,129,.08);color:#34d399;border:1px solid rgba(16,185,129,.15)}
+.btn-copy-card:hover{background:rgba(16,185,129,.18);border-color:rgba(16,185,129,.35)}
+.btn-view-card{background:rgba(6,182,212,.08);color:#22d3ee;border:1px solid rgba(6,182,212,.15)}
+.btn-view-card:hover{background:rgba(6,182,212,.18);border-color:rgba(6,182,212,.35)}
+.btn-flag{background:rgba(245,158,11,.08);color:#fbbf24;border:1px solid rgba(245,158,11,.15)}
+.btn-flag:hover{background:rgba(245,158,11,.18);border-color:rgba(245,158,11,.35)}
+.modal-overlay{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;padding:20px;opacity:0;transition:opacity .3s}
 .modal-overlay.active{display:flex;opacity:1}
-.modal{
-  background:var(--bg2);border:1px solid var(--border);border-radius:16px;
-  width:100%;max-width:520px;max-height:90vh;overflow-y:auto;
-  box-shadow:0 24px 80px rgba(0,0,0,.6);
-  transform:scale(.95) translateY(20px);transition:.35s;
-}
-.modal-overlay.active .modal{transform:scale(1) translateY(0)}
-.modal-lg{max-width:720px}
-.modal-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:24px 28px 0;
-}
-.modal-header h2{
-  font-family:var(--title);font-size:1.5rem;font-weight:700;
-  background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
-}
-.modal-close{
-  width:36px;height:36px;border-radius:50%;
-  background:rgba(255,255,255,.05);color:var(--text2);
-  display:flex;align-items:center;justify-content:center;
-  font-size:1.1rem;transition:.3s;
-}
-.modal-close:hover{background:rgba(255,68,102,.15);color:var(--danger)}
+.modal{background:var(--bg-surface);border:1px solid var(--border2);border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;box-shadow:0 25px 60px rgba(0,0,0,.5),0 0 40px rgba(139,92,246,.1);transform:scale(.95);transition:transform .3s;position:relative}
+.modal-overlay.active .modal{transform:scale(1)}
+.modal-header{display:flex;align-items:center;justify-content:space-between;padding:24px 28px 0}
+.modal-header h2{font-size:1.3rem;font-weight:700;display:flex;align-items:center;gap:10px}
+.modal-header h2 i{color:var(--accent);font-size:1.1rem}
+.modal-close{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--text3);font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;cursor:pointer}
+.modal-close:hover{background:rgba(239,68,68,.15);color:var(--error);border-color:rgba(239,68,68,.3)}
 .modal-body{padding:24px 28px 28px}
-
-/* ─── AUTH TABS ─── */
-.auth-tabs{display:flex;gap:0;margin-bottom:24px;border-radius:var(--radius-sm);overflow:hidden;border:1px solid var(--border)}
-.auth-tab{
-  flex:1;padding:12px;text-align:center;font-weight:600;font-size:.9rem;
-  background:transparent;color:var(--text2);transition:.3s;
-}
-.auth-tab.active{background:var(--grad);color:#000}
-.auth-tab:hover:not(.active){background:rgba(255,255,255,.03)}
-
-/* ─── FORMS ─── */
+.modal-wide{max-width:900px}
+.tabs{display:flex;gap:0;border-bottom:2px solid var(--border);margin:20px 28px 0}
+.tab{padding:12px 24px;font-size:.9rem;font-weight:600;color:var(--text3);background:none;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer;transition:all .2s}
+.tab:hover{color:var(--text)}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent)}
+.tab-content{display:none}
+.tab-content.active{display:block}
 .form-group{margin-bottom:18px}
-.form-group label{
-  display:block;font-size:.85rem;font-weight:600;color:var(--text2);
-  margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;
-}
-.form-group input,.form-group textarea{
-  width:100%;padding:12px 16px;
-  background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);
-  color:var(--text);font-size:.9rem;transition:.3s;
-}
-.form-group input:focus,.form-group textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(0,255,136,.08)}
-.form-group textarea{resize:vertical;min-height:100px;font-family:var(--mono);font-size:.85rem}
-.form-group textarea.code-input{min-height:200px;color:var(--accent);background:rgba(0,0,0,.3)}
-.submit-btn{
-  width:100%;padding:14px;border-radius:var(--radius-sm);
-  background:var(--grad);color:#000;font-size:1rem;font-weight:700;
-  transition:.3s;text-transform:uppercase;letter-spacing:1px;
-}
-.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,255,136,.3)}
-.submit-btn:active{transform:translateY(0)}
-.submit-btn:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
-
-/* ─── VIEW SCRIPT MODAL ─── */
-.view-title{font-family:var(--title);font-size:1.6rem;font-weight:700;margin-bottom:6px}
-.view-meta{display:flex;align-items:center;gap:16px;margin-bottom:16px;flex-wrap:wrap}
-.view-meta span{font-size:.85rem;color:var(--text2);display:flex;align-items:center;gap:5px}
-.view-meta i{font-size:.8rem}
-.view-desc{color:var(--text2);font-size:.92rem;line-height:1.6;margin-bottom:20px}
-.view-code-block{
-  background:rgba(0,0,0,.5);border:1px solid var(--border);border-radius:var(--radius-sm);
-  padding:20px;font-family:var(--mono);font-size:.82rem;
-  color:var(--accent);line-height:1.6;
-  max-height:400px;overflow-y:auto;white-space:pre-wrap;word-break:break-all;
-  position:relative;
-}
-.view-code-header{
-  display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;
-}
-.view-code-header span{font-family:var(--title);font-size:.95rem;color:var(--text2);font-weight:600}
-.view-actions{display:flex;gap:10px;margin-top:20px}
-.view-actions .action-btn{flex:unset;padding:12px 24px}
-
-/* ─── TOAST ─── */
-.toast-container{
-  position:fixed;bottom:24px;right:24px;z-index:3000;
-  display:flex;flex-direction:column;gap:10px;
-}
-.toast{
-  padding:14px 22px;border-radius:var(--radius-sm);
-  background:var(--bg3);border:1px solid var(--border);
-  color:var(--text);font-size:.88rem;font-weight:500;
-  box-shadow:var(--shadow);
-  display:flex;align-items:center;gap:10px;
-  animation:slideIn .35s ease;min-width:280px;
-}
-.toast.success{border-color:rgba(0,255,136,.3)}
-.toast.success i{color:var(--accent)}
-.toast.error{border-color:rgba(255,68,102,.3)}
-.toast.error i{color:var(--danger)}
-.toast.info{border-color:rgba(0,212,255,.3)}
-.toast.info i{color:var(--accent2)}
-
-/* ─── LOADING ─── */
-.loader{
-  display:flex;justify-content:center;padding:60px;grid-column:1/-1;
-}
-.spinner{
-  width:40px;height:40px;border:3px solid var(--border);
-  border-top-color:var(--accent);border-radius:50%;
-  animation:spin .8s linear infinite;
-}
-
-/* ─── ANIMATIONS ─── */
-@keyframes fadeUp{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
-}
-@keyframes slideIn{
-  from{opacity:0;transform:translateX(60px)}
-  to{opacity:1;transform:translateX(0)}
-}
+.form-group label{display:block;font-size:.85rem;font-weight:600;color:var(--text2);margin-bottom:8px}
+.form-group label i{margin-right:6px;color:var(--accent);font-size:.75rem}
+.form-input{width:100%;padding:12px 16px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:.9rem;transition:all .3s;outline:none}
+.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(139,92,246,.12)}
+.form-input::placeholder{color:var(--text3)}
+.form-input.input-error{border-color:var(--error)!important;box-shadow:0 0 0 3px rgba(239,68,68,.12)!important}
+textarea.form-input{min-height:120px;resize:vertical;font-family:'JetBrains Mono',monospace;font-size:.82rem;line-height:1.6}
+textarea.form-input.code-area{min-height:200px}
+.form-hint{font-size:.75rem;color:var(--text3);margin-top:6px}
+.form-error{font-size:.75rem;color:var(--error);margin-top:6px;display:none}
+.form-error.visible{display:block}
+.view-script-code{background:var(--bg-body);border:1px solid var(--border);border-radius:var(--radius-sm);padding:20px;font-family:'JetBrains Mono',monospace;font-size:.82rem;color:#c4b5fd;line-height:1.7;max-height:400px;overflow:auto;white-space:pre-wrap;word-break:break-all;position:relative}
+.view-meta{display:flex;align-items:center;gap:20px;margin:16px 0;font-size:.85rem;color:var(--text3);flex-wrap:wrap}
+.view-meta span{display:flex;align-items:center;gap:6px}
+.view-meta i{color:var(--accent);font-size:.8rem}
+.view-desc{font-size:.9rem;color:var(--text2);margin-bottom:20px;padding:16px;background:var(--bg-card);border-radius:var(--radius-sm);border:1px solid var(--border)}
+.view-actions{display:flex;gap:10px;margin-top:20px;flex-wrap:wrap}
+.admin-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.admin-stat{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px;text-align:center}
+.admin-stat .num{font-size:1.8rem;font-weight:800;background:var(--accent-g2);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.admin-stat .lbl{font-size:.75rem;color:var(--text3);text-transform:uppercase;letter-spacing:.5px}
+.admin-list{display:flex;flex-direction:column;gap:10px;max-height:500px;overflow-y:auto}
+.admin-item{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius-sm);gap:12px;flex-wrap:wrap}
+.admin-item.flagged{border-color:rgba(239,68,68,.4);background:rgba(239,68,68,.05)}
+.admin-item-info{flex:1;min-width:200px}
+.admin-item-title{font-weight:600;font-size:.9rem}
+.admin-item-meta{font-size:.75rem;color:var(--text3);margin-top:4px}
+.admin-item-actions{display:flex;gap:8px}
+.blocked-words-list{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.blocked-word-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:.75rem;font-weight:600;background:rgba(239,68,68,.12);color:#f87171;border:1px solid rgba(239,68,68,.25)}
+.blocked-word-tag button{background:none;border:none;color:#f87171;font-size:.7rem;cursor:pointer;padding:0;display:flex;align-items:center}
+.blocked-word-tag button:hover{color:#ef4444}
+.toast-container{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px}
+.toast{padding:14px 20px;border-radius:var(--radius-sm);font-size:.875rem;font-weight:500;display:flex;align-items:center;gap:10px;box-shadow:var(--shadow);animation:toastIn .4s ease-out;min-width:280px;max-width:420px;border:1px solid transparent}
+.toast.success{background:#064e3b;color:#6ee7b7;border-color:rgba(16,185,129,.3)}
+.toast.error{background:#450a0a;color:#fca5a5;border-color:rgba(239,68,68,.3)}
+.toast.info{background:#1e1b4b;color:#c4b5fd;border-color:rgba(139,92,246,.3)}
+.toast.warn{background:#451a03;color:#fcd34d;border-color:rgba(245,158,11,.3)}
+@keyframes toastIn{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:translateX(0)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(60px)}}
+.empty-state{text-align:center;padding:60px 20px;grid-column:1 / -1}
+.empty-state i{font-size:3rem;color:var(--text3);margin-bottom:16px}
+.empty-state h3{font-size:1.2rem;color:var(--text2);margin-bottom:8px}
+.empty-state p{font-size:.9rem;color:var(--text3)}
+.loader{display:flex;justify-content:center;padding:60px;grid-column:1 / -1}
+.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-@keyframes pulse{
-  0%,100%{opacity:1}
-  50%{opacity:.5}
-}
-
-/* ─── RESPONSIVE ─── */
+.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.badge-new{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3)}
+.badge-blocked{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.footer{border-top:1px solid var(--border);padding:30px 2rem;text-align:center;color:var(--text3);font-size:.8rem;position:relative;z-index:1}
+.footer span{background:var(--accent-g2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;font-weight:700}
 @media(max-width:768px){
-  .navbar{padding:0 14px;gap:8px}
-  .nav-center{max-width:none;margin:0 10px;flex:1}
-  .nav-right{gap:6px}
-  .nav-btn span.btn-text{display:none}
-  .nav-btn{padding:8px 12px}
-  .user-name{display:none}
-  .hero h1{font-size:1.8rem}
-  .scripts-grid{grid-template-columns:1fr}
-  .modal{margin:10px;max-height:95vh}
-  .stats-row{gap:20px}
-  .view-actions{flex-direction:column}
-  .view-actions .action-btn{flex:1}
+  .navbar{padding:0 1rem;height:60px}.nav-search{margin:0 12px;max-width:none}.nav-logo span{display:none}
+  .hero{padding:110px 1rem 40px}.hero-stats{gap:24px}.stat-num{font-size:1.4rem}
+  .section{padding:0 1rem 60px}.scripts-grid{grid-template-columns:1fr}
+  .modal{margin:10px;border-radius:12px}.modal-body{padding:20px}.tabs{margin:16px 20px 0}
+  .card-actions .btn{font-size:.75rem;padding:6px 8px}.admin-stats{grid-template-columns:repeat(2,1fr)}
+  .nav-user .uname{display:none}.btn span.btn-text{display:none}
 }
 @media(max-width:480px){
-  .hero{padding:100px 16px 30px}
-  .container{padding:0 12px 40px}
-  .script-card{padding:18px}
-  .card-actions{flex-direction:column}
-  .action-btn{flex:unset}
+  .hero h1{font-size:1.6rem;letter-spacing:-1px}.hero p{font-size:.95rem}
+  .hero-stats{flex-direction:column;gap:10px}.card-actions{flex-direction:column}
+  .card-actions .btn{flex:none}.view-actions{flex-direction:column}
 }
+.hidden{display:none!important}
 </style>
 </head>
 <body>
 
-<!-- ═══ NAVBAR ═══ -->
+<div class="bg-grid"></div>
+<div class="bg-glow bg-glow-1"></div>
+<div class="bg-glow bg-glow-2"></div>
+<div class="bg-glow bg-glow-3"></div>
+<div class="toast-container" id="toastContainer"></div>
+
 <nav class="navbar" id="navbar">
-  <a href="#" class="nav-brand" onclick="resetFilters()">
-    <i class="fa-solid fa-terminal"></i>
-    ByteZ Scripts
-  </a>
-  <div class="nav-center">
-    <div class="search-box">
-      <i class="fa-solid fa-magnifying-glass"></i>
-      <input type="text" id="searchInput" placeholder="Buscar scripts..." oninput="handleSearch()">
-    </div>
+  <div class="nav-logo"><i class="fa-solid fa-terminal"></i><span>KX Scripts</span></div>
+  <div class="nav-search">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <input type="text" id="searchInput" placeholder="Buscar scripts por título, descrição ou autor...">
   </div>
-  <div class="nav-right" id="navRight">
-    <!-- Preenchido pelo JS -->
+  <div class="nav-right">
+    <div id="navLoggedOut">
+      <button class="btn btn-primary btn-sm" onclick="openModal('authModal')">
+        <i class="fa-solid fa-right-to-bracket"></i><span class="btn-text">Entrar</span>
+      </button>
+    </div>
+    <div id="navLoggedIn" class="hidden" style="display:flex;align-items:center;gap:10px">
+      <div class="nav-user">
+        <div class="avatar" id="userAvatar">?</div>
+        <span class="uname" id="userDisplayName">Usuário</span>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('postModal')" title="Postar Script">
+        <i class="fa-solid fa-plus"></i><span class="btn-text">Postar</span>
+      </button>
+      <button class="btn btn-secondary btn-sm hidden" id="btnAdmin" onclick="openAdminPanel()" title="Painel Admin">
+        <i class="fa-solid fa-shield-halved"></i><span class="btn-text">Admin</span>
+      </button>
+      <button class="btn btn-ghost btn-icon" onclick="logout()" title="Sair">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+      </button>
+    </div>
   </div>
 </nav>
 
-<!-- ═══ HERO ═══ -->
 <section class="hero">
-  <h1>Explore os melhores<br><span>Scripts Lua</span></h1>
-  <p>Encontre, compartilhe e copie scripts para seus projetos. Comunidade aberta para todos.</p>
-  <div class="stats-row">
-    <div class="stat">
-      <div class="stat-num" id="totalScripts">0</div>
-      <div class="stat-label">Scripts</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num" id="totalLikes">0</div>
-      <div class="stat-label">Curtidas</div>
-    </div>
-    <div class="stat">
-      <div class="stat-num" id="totalViews">0</div>
-      <div class="stat-label">Visualizações</div>
-    </div>
+  <h1>🎮 Hub de Scripts para Roblox</h1>
+  <p>Encontre, compartilhe e copie os melhores scripts Lua. A comunidade feita para exploiters e desenvolvedores.</p>
+  <div class="hero-stats">
+    <div class="stat"><div class="stat-num" id="statScripts">0</div><div class="stat-label">Scripts</div></div>
+    <div class="stat"><div class="stat-num" id="statUsers">0</div><div class="stat-label">Usuários</div></div>
+    <div class="stat"><div class="stat-num" id="statLikes">0</div><div class="stat-label">Curtidas</div></div>
   </div>
 </section>
 
-<!-- ═══ FILTERS ═══ -->
-<div class="filters" id="filtersBar">
-  <button class="filter-btn active" data-filter="recent" onclick="setFilter('recent')">
-    <i class="fa-solid fa-clock"></i> Recentes
-  </button>
-  <button class="filter-btn" data-filter="popular" onclick="setFilter('popular')">
-    <i class="fa-solid fa-fire"></i> Populares
-  </button>
-  <button class="filter-btn" data-filter="most-viewed" onclick="setFilter('most-viewed')">
-    <i class="fa-solid fa-eye"></i> Mais Vistos
-  </button>
-  <button class="filter-btn" data-filter="mine" onclick="setFilter('mine')" id="filterMine" style="display:none">
-    <i class="fa-solid fa-user"></i> Meus Scripts
-  </button>
-</div>
-
-<!-- ═══ SCRIPTS GRID ═══ -->
-<div class="container">
-  <div class="scripts-grid" id="scriptsGrid">
-    <div class="loader"><div class="spinner"></div></div>
+<section class="section">
+  <div class="section-header">
+    <h2 class="section-title"><i class="fa-solid fa-fire"></i> Scripts Recentes</h2>
+    <span style="font-size:.85rem;color:var(--text3)" id="scriptCount">0 scripts</span>
   </div>
-</div>
+  <div class="scripts-grid" id="scriptsGrid"><div class="loader"><div class="spinner"></div></div></div>
+</section>
 
-<!-- ═══ AUTH MODAL ═══ -->
+<!-- AUTH -->
 <div class="modal-overlay" id="authModal">
   <div class="modal">
     <div class="modal-header">
-      <h2 id="authTitle">Entrar</h2>
+      <h2><i class="fa-solid fa-user-lock"></i> Conta</h2>
       <button class="modal-close" onclick="closeModal('authModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
+    <div class="tabs" id="authTabs">
+      <button class="tab active" onclick="switchTab('login',this)">Login</button>
+      <button class="tab" onclick="switchTab('register',this)">Cadastro</button>
+    </div>
     <div class="modal-body">
-      <div class="auth-tabs">
-        <button class="auth-tab active" id="tabLogin" onclick="switchAuthTab('login')">Login</button>
-        <button class="auth-tab" id="tabRegister" onclick="switchAuthTab('register')">Cadastro</button>
+      <div class="tab-content active" id="tab-login">
+        <form onsubmit="handleLogin(event)">
+          <div class="form-group"><label><i class="fa-solid fa-envelope"></i> Email</label><input type="email" class="form-input" id="loginEmail" placeholder="seu@email.com" required></div>
+          <div class="form-group"><label><i class="fa-solid fa-lock"></i> Senha</label><input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required minlength="6"></div>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center" id="btnLogin"><i class="fa-solid fa-right-to-bracket"></i> Entrar</button>
+        </form>
       </div>
-
-      <!-- Login -->
-      <form id="loginForm" onsubmit="handleLogin(event)">
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="loginEmail" placeholder="seu@email.com" required>
-        </div>
-        <div class="form-group">
-          <label>Senha</label>
-          <input type="password" id="loginPassword" placeholder="••••••••" required minlength="6">
-        </div>
-        <button type="submit" class="submit-btn" id="loginBtn">
-          <i class="fa-solid fa-right-to-bracket"></i> Entrar
-        </button>
-      </form>
-
-      <!-- Register -->
-      <form id="registerForm" style="display:none" onsubmit="handleRegister(event)">
-        <div class="form-group">
-          <label>Nome de Usuário</label>
-          <input type="text" id="regUsername" placeholder="ByteZMaster" required minlength="3" maxlength="20">
-        </div>
-        <div class="form-group">
-          <label>Email</label>
-          <input type="email" id="regEmail" placeholder="seu@email.com" required>
-        </div>
-        <div class="form-group">
-          <label>Senha</label>
-          <input type="password" id="regPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
-        </div>
-        <button type="submit" class="submit-btn" id="regBtn">
-          <i class="fa-solid fa-user-plus"></i> Criar Conta
-        </button>
-      </form>
+      <div class="tab-content" id="tab-register">
+        <form onsubmit="handleRegister(event)">
+          <div class="form-group"><label><i class="fa-solid fa-user"></i> Nome de Usuário</label><input type="text" class="form-input" id="regUsername" placeholder="MeuNome" required minlength="3" maxlength="20"></div>
+          <div class="form-group"><label><i class="fa-solid fa-envelope"></i> Email</label><input type="email" class="form-input" id="regEmail" placeholder="seu@email.com" required></div>
+          <div class="form-group"><label><i class="fa-solid fa-lock"></i> Senha</label><input type="password" class="form-input" id="regPassword" placeholder="Mínimo 6 caracteres" required minlength="6"></div>
+          <button type="submit" class="btn btn-primary" style="width:100%;justify-content:center" id="btnRegister"><i class="fa-solid fa-user-plus"></i> Criar Conta</button>
+        </form>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ═══ POST SCRIPT MODAL ═══ -->
+<!-- POST -->
 <div class="modal-overlay" id="postModal">
-  <div class="modal modal-lg">
+  <div class="modal modal-wide">
     <div class="modal-header">
-      <h2><i class="fa-solid fa-plus"></i> Novo Script</h2>
+      <h2><i class="fa-solid fa-code"></i> Publicar Script</h2>
       <button class="modal-close" onclick="closeModal('postModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div class="modal-body">
-      <form id="postForm" onsubmit="handlePost(event)">
+      <form onsubmit="handlePostScript(event)">
         <div class="form-group">
-          <label>Título</label>
-          <input type="text" id="postTitle" placeholder="Ex: Infinite Yield Script" required maxlength="80">
+          <label><i class="fa-solid fa-heading"></i> Título do Script</label>
+          <input type="text" class="form-input" id="scriptTitle" placeholder="Ex: Blox Fruits Auto Farm" required maxlength="80">
+          <div class="form-error" id="titleError"></div>
         </div>
         <div class="form-group">
-          <label>Descrição</label>
-          <input type="text" id="postDesc" placeholder="Breve descrição do que o script faz" required maxlength="200">
+          <label><i class="fa-solid fa-align-left"></i> Descrição</label>
+          <textarea class="form-input" id="scriptDesc" placeholder="Descreva o que o script faz, para qual jogo, etc." required maxlength="500" style="min-height:100px"></textarea>
+          <div class="form-error" id="descError"></div>
         </div>
         <div class="form-group">
-          <label>Código Lua</label>
-          <textarea id="postCode" class="code-input" placeholder='loadstring(game:HttpGet("https://..."))()' required></textarea>
+          <label><i class="fa-solid fa-terminal"></i> Código Lua</label>
+          <textarea class="form-input code-area" id="scriptCode" placeholder='loadstring(game:HttpGet("https://..."))()' required></textarea>
+          <div class="form-error" id="codeError"></div>
+          <div class="form-hint">Cole o código completo do script Lua aqui.</div>
         </div>
-        <button type="submit" class="submit-btn" id="postBtn">
-          <i class="fa-solid fa-paper-plane"></i> Publicar Script
-        </button>
+        <div style="display:flex;gap:10px">
+          <button type="submit" class="btn btn-primary" style="flex:1;justify-content:center" id="btnPost"><i class="fa-solid fa-paper-plane"></i> Publicar Script</button>
+          <button type="button" class="btn btn-secondary" onclick="closeModal('postModal')">Cancelar</button>
+        </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- ═══ VIEW SCRIPT MODAL ═══ -->
+<!-- VIEW -->
 <div class="modal-overlay" id="viewModal">
-  <div class="modal modal-lg">
+  <div class="modal modal-wide">
     <div class="modal-header">
-      <h2><i class="fa-solid fa-code"></i> Script</h2>
+      <h2 id="viewTitle"><i class="fa-solid fa-scroll"></i> Script</h2>
       <button class="modal-close" onclick="closeModal('viewModal')"><i class="fa-solid fa-xmark"></i></button>
     </div>
-    <div class="modal-body" id="viewBody">
-      <!-- Conteúdo preenchido pelo JS -->
+    <div class="modal-body">
+      <div class="view-meta" id="viewMeta"></div>
+      <div class="view-desc" id="viewDesc"></div>
+      <div class="view-script-code" id="viewCode"></div>
+      <div class="view-actions">
+        <button class="btn btn-success" onclick="copyViewScript()"><i class="fa-solid fa-copy"></i> Copiar Script</button>
+        <button class="btn btn-like" id="viewLikeBtn"><i class="fa-solid fa-heart"></i> <span id="viewLikeCount">0</span></button>
+        <button class="btn btn-secondary" onclick="closeModal('viewModal')"><i class="fa-solid fa-xmark"></i> Fechar</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- ═══ TOASTS ═══ -->
-<div class="toast-container" id="toastContainer"></div>
+<!-- ADMIN -->
+<div class="modal-overlay" id="adminModal">
+  <div class="modal modal-wide">
+    <div class="modal-header">
+      <h2><i class="fa-solid fa-shield-halved"></i> Painel Administrativo</h2>
+      <button class="modal-close" onclick="closeModal('adminModal')"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="tabs" id="adminTabs">
+      <button class="tab active" onclick="switchAdminTab('scripts',this)">Scripts</button>
+      <button class="tab" onclick="switchAdminTab('blocked',this)">Palavras Bloqueadas</button>
+      <button class="tab" onclick="switchAdminTab('bans',this)">Usuários Banidos</button>
+    </div>
+    <div class="modal-body">
+      <div class="tab-content active" id="admin-tab-scripts">
+        <div class="admin-stats" id="adminStats"></div>
+        <h3 style="font-size:1rem;margin-bottom:14px;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-list" style="color:var(--accent)"></i> Todos os Scripts</h3>
+        <div class="admin-list" id="adminList"></div>
+      </div>
+      <div class="tab-content" id="admin-tab-blocked">
+        <h3 style="font-size:1rem;margin-bottom:8px;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-ban" style="color:var(--error)"></i> Palavras Bloqueadas</h3>
+        <p style="font-size:.85rem;color:var(--text3);margin-bottom:16px">Scripts contendo essas palavras no título ou descrição serão bloqueados.</p>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <input type="text" class="form-input" id="newBlockedWord" placeholder="Adicionar palavra proibida..." style="flex:1">
+          <button class="btn btn-danger btn-sm" onclick="addBlockedWord()"><i class="fa-solid fa-plus"></i> Adicionar</button>
+        </div>
+        <div class="blocked-words-list" id="blockedWordsList"></div>
+      </div>
+      <div class="tab-content" id="admin-tab-bans">
+        <h3 style="font-size:1rem;margin-bottom:8px;display:flex;align-items:center;gap:8px"><i class="fa-solid fa-user-slash" style="color:var(--error)"></i> Banir Usuário</h3>
+        <p style="font-size:.85rem;color:var(--text3);margin-bottom:16px">Usuários banidos não poderão postar scripts.</p>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <input type="text" class="form-input" id="banUserId" placeholder="UID do usuário para banir..." style="flex:1">
+          <button class="btn btn-danger btn-sm" onclick="banUser()"><i class="fa-solid fa-ban"></i> Banir</button>
+        </div>
+        <div class="admin-list" id="bannedList"></div>
+      </div>
+    </div>
+  </div>
+</div>
 
-<!-- ═══ JAVASCRIPT ═══ -->
+<footer class="footer"><p>© 2025 <span>KX Scripts</span> — Hub de Scripts Lua para Roblox.</p></footer>
+
 <script>
-// ═══════════════════════════════════════
-//  FIREBASE INIT
-// ═══════════════════════════════════════
-const firebaseConfig = {
-  apiKey: "AIzaSyDbmJbhYLofmkF99TwhF_skc_iAnwBTNPY",
-  authDomain: "bytez-script.firebaseapp.com",
-  projectId: "bytez-script",
-  storageBucket: "bytez-script.firebasestorage.app",
-  messagingSenderId: "716754895227",
-  appId: "1:716754895227:web:f661b3dbfd25df9b6bfdde"
-};
-firebase.initializeApp(firebaseConfig);
+// =====================================================================
+// FIREBASE — NOVO PROJETO kxscript-ffb02
+// =====================================================================
+firebase.initializeApp({
+  apiKey: "AIzaSyAvseIxqhgSDpBFZTx9oecI9lqDTrCKunc",
+  authDomain: "kxscript-ffb02.firebaseapp.com",
+  projectId: "kxscript-ffb02",
+  storageBucket: "kxscript-ffb02.firebasestorage.app",
+  messagingSenderId: "7079956395",
+  appId: "1:7079956395:web:94fc0890b82deb48440cee"
+});
+
 const auth = firebase.auth();
 const db   = firebase.firestore();
 
-// ═══════════════════════════════════════
-//  STATE
-// ═══════════════════════════════════════
-let currentUser = null;
-let currentUsername = '';
-let allScripts = [];
-let currentFilter = 'recent';
-let searchQuery = '';
+const ADMIN_EMAIL     = 'bytez@gmail.com';
+const MAX_DAILY_POSTS = 2;
 
-// ═══════════════════════════════════════
-//  AUTH STATE
-// ═══════════════════════════════════════
+// =====================================================================
+// FILTRO (só título e descrição — NÃO bloqueia código)
+// =====================================================================
+let blockedWords = [
+  'hackeado','hacked','hack3ado','h4ckeado',
+  'deface','defaced','pwned','owned',
+  'vandalismo','vandalizado','invadido','invadida'
+];
+
+async function loadBlockedWords() {
+  try {
+    const doc = await db.collection('config').doc('blockedWords').get();
+    if (doc.exists && doc.data().words) blockedWords = doc.data().words;
+  } catch(e) {}
+}
+
+async function saveBlockedWords() {
+  try {
+    await db.collection('config').doc('blockedWords').set({
+      words: blockedWords,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(e) {}
+}
+
+function checkContentFilter(title, description) {
+  const fields = [
+    { name: 'título', value: title },
+    { name: 'descrição', value: description }
+  ];
+  for (const field of fields) {
+    const lower = (field.value || '').toLowerCase();
+    for (const word of blockedWords) {
+      const w = word.toLowerCase().trim();
+      if (w && lower.includes(w)) return { blocked: true, word, field: field.name };
+    }
+  }
+  const t = (title||'').trim().toLowerCase();
+  const d = (description||'').trim().toLowerCase();
+  if (t && t === d && t.length < 15) return { blocked: true, word: '[título e descrição iguais]', field: 'título/descrição' };
+  return { blocked: false, word: null, field: null };
+}
+
+// =====================================================================
+// BANS
+// =====================================================================
+let bannedUsers = [];
+async function loadBannedUsers() {
+  try {
+    const doc = await db.collection('config').doc('bannedUsers').get();
+    if (doc.exists && doc.data().uids) bannedUsers = doc.data().uids;
+  } catch(e) {}
+}
+async function saveBannedUsers() {
+  try {
+    await db.collection('config').doc('bannedUsers').set({
+      uids: bannedUsers,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+  } catch(e) {}
+}
+
+// =====================================================================
+// STATE
+// =====================================================================
+let currentUser = null, currentUserDoc = null, isAdmin = false;
+let allScripts = [], viewingScript = null;
+
+// =====================================================================
+// AUTH OBSERVER
+// =====================================================================
 auth.onAuthStateChanged(async user => {
-  currentUser = user;
   if (user) {
-    // Buscar nome do usuário no Firestore
+    currentUser = user;
+    isAdmin = user.email === ADMIN_EMAIL;
     try {
       const doc = await db.collection('users').doc(user.uid).get();
-      currentUsername = doc.exists ? doc.data().username : user.email.split('@')[0];
-    } catch {
-      currentUsername = user.email.split('@')[0];
-    }
+      currentUserDoc = doc.exists ? doc.data() : null;
+    } catch(e) { currentUserDoc = null; }
+    updateNavbar(true);
   } else {
-    currentUsername = '';
+    currentUser = null; currentUserDoc = null; isAdmin = false;
+    updateNavbar(false);
   }
-  renderNav();
+  await loadBlockedWords();
+  await loadBannedUsers();
   loadScripts();
 });
 
-// ═══════════════════════════════════════
-//  RENDER NAVBAR
-// ═══════════════════════════════════════
-function renderNav() {
-  const nav = document.getElementById('navRight');
-  const filterMine = document.getElementById('filterMine');
-
-  if (currentUser) {
-    const initial = currentUsername.charAt(0).toUpperCase();
-    nav.innerHTML = `
-      <div class="user-area">
-        <div class="user-avatar">${initial}</div>
-        <span class="user-name">${currentUsername}</span>
-      </div>
-      <button class="nav-btn nav-btn-primary" onclick="openModal('postModal')">
-        <i class="fa-solid fa-plus"></i><span class="btn-text">Novo Script</span>
-      </button>
-      <button class="nav-btn nav-btn-danger" onclick="handleLogout()">
-        <i class="fa-solid fa-right-from-bracket"></i>
-      </button>
-    `;
-    filterMine.style.display = '';
+function updateNavbar(loggedIn) {
+  const out = document.getElementById('navLoggedOut');
+  const inn = document.getElementById('navLoggedIn');
+  const adminBtn = document.getElementById('btnAdmin');
+  if (loggedIn) {
+    out.classList.add('hidden');
+    inn.classList.remove('hidden'); inn.style.display = 'flex';
+    const name = currentUserDoc?.username || currentUser.displayName || currentUser.email.split('@')[0];
+    document.getElementById('userDisplayName').textContent = name;
+    document.getElementById('userAvatar').textContent = name.charAt(0).toUpperCase();
+    if (isAdmin) adminBtn.classList.remove('hidden'); else adminBtn.classList.add('hidden');
   } else {
-    nav.innerHTML = `
-      <button class="nav-btn nav-btn-outline" onclick="openModal('authModal')">
-        <i class="fa-solid fa-right-to-bracket"></i><span class="btn-text">Entrar</span>
-      </button>
-      <button class="nav-btn nav-btn-primary" onclick="openAuthRegister()">
-        <i class="fa-solid fa-user-plus"></i><span class="btn-text">Cadastro</span>
-      </button>
-    `;
-    filterMine.style.display = 'none';
-    if (currentFilter === 'mine') setFilter('recent');
+    out.classList.remove('hidden');
+    inn.classList.add('hidden'); inn.style.display = 'none';
   }
 }
 
-// ═══════════════════════════════════════
-//  AUTH FUNCTIONS
-// ═══════════════════════════════════════
-function switchAuthTab(tab) {
-  const loginForm = document.getElementById('loginForm');
-  const regForm = document.getElementById('registerForm');
-  const tabL = document.getElementById('tabLogin');
-  const tabR = document.getElementById('tabRegister');
-  const title = document.getElementById('authTitle');
-
-  if (tab === 'login') {
-    loginForm.style.display = '';
-    regForm.style.display = 'none';
-    tabL.classList.add('active');
-    tabR.classList.remove('active');
-    title.textContent = 'Entrar';
-  } else {
-    loginForm.style.display = 'none';
-    regForm.style.display = '';
-    tabR.classList.add('active');
-    tabL.classList.remove('active');
-    title.textContent = 'Criar Conta';
-  }
-}
-
-function openAuthRegister() {
-  openModal('authModal');
-  switchAuthTab('register');
-}
-
+// =====================================================================
+// AUTH
+// =====================================================================
 async function handleLogin(e) {
   e.preventDefault();
-  const btn = document.getElementById('loginBtn');
+  const btn = document.getElementById('btnLogin');
   const email = document.getElementById('loginEmail').value.trim();
-  const pass = document.getElementById('loginPassword').value;
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Entrando...';
+  const pass  = document.getElementById('loginPassword').value;
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Entrando...';
   try {
     await auth.signInWithEmailAndPassword(email, pass);
     toast('Login realizado com sucesso!', 'success');
     closeModal('authModal');
-    document.getElementById('loginForm').reset();
-  } catch (err) {
-    toast(firebaseError(err.code), 'error');
-  }
-  btn.disabled = false;
-  btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+  } catch(err) { toast(firebaseError(err.code), 'error'); }
+  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-right-to-bracket"></i> Entrar';
 }
 
 async function handleRegister(e) {
   e.preventDefault();
-  const btn = document.getElementById('regBtn');
-  const username = document.getElementById('regUsername').value.trim();
-  const email = document.getElementById('regEmail').value.trim();
-  const pass = document.getElementById('regPassword').value;
-
-  if (username.length < 3) { toast('Nome de usuário deve ter pelo menos 3 caracteres.', 'error'); return; }
-
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Criando...';
+  const btn = document.getElementById('btnRegister');
+  let username = document.getElementById('regUsername').value.trim().replace(/[<>\"\'&\\\/]/g,'').substring(0,20);
+  const email  = document.getElementById('regEmail').value.trim();
+  const pass   = document.getElementById('regPassword').value;
+  if (username.length < 3) return toast('Nome deve ter pelo menos 3 caracteres.', 'error');
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Criando...';
   try {
     const cred = await auth.createUserWithEmailAndPassword(email, pass);
+    await cred.user.updateProfile({ displayName: username });
     await db.collection('users').doc(cred.user.uid).set({
-      username: username,
-      email: email,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      username, email, createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
-    toast('Conta criada com sucesso! Bem-vindo, ' + username, 'success');
+    toast('Conta criada! Bem-vindo, ' + username + '!', 'success');
     closeModal('authModal');
-    document.getElementById('registerForm').reset();
-  } catch (err) {
-    toast(firebaseError(err.code), 'error');
-  }
-  btn.disabled = false;
-  btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Criar Conta';
+    document.getElementById('regUsername').value = '';
+    document.getElementById('regEmail').value = '';
+    document.getElementById('regPassword').value = '';
+  } catch(err) { toast(firebaseError(err.code), 'error'); }
+  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-user-plus"></i> Criar Conta';
 }
 
-async function handleLogout() {
-  await auth.signOut();
-  toast('Você saiu da conta.', 'info');
-}
+function logout() { auth.signOut(); toast('Você saiu da conta.', 'info'); }
 
-function firebaseError(code) {
-  const map = {
-    'auth/user-not-found': 'Usuário não encontrado.',
-    'auth/wrong-password': 'Senha incorreta.',
-    'auth/email-already-in-use': 'Este email já está em uso.',
-    'auth/weak-password': 'A senha deve ter pelo menos 6 caracteres.',
-    'auth/invalid-email': 'Email inválido.',
-    'auth/too-many-requests': 'Muitas tentativas. Tente novamente mais tarde.',
-    'auth/invalid-credential': 'Credenciais inválidas. Verifique email e senha.',
-  };
-  return map[code] || 'Ocorreu um erro. Tente novamente.';
-}
-
-// ═══════════════════════════════════════
-//  SCRIPTS — LOAD
-// ═══════════════════════════════════════
+// =====================================================================
+// SCRIPTS - LOAD
+// =====================================================================
 async function loadScripts() {
   const grid = document.getElementById('scriptsGrid');
   grid.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
-
   try {
-    let query = db.collection('scripts');
-
-    if (currentFilter === 'popular') {
-      query = query.orderBy('likes', 'desc');
-    } else if (currentFilter === 'most-viewed') {
-      query = query.orderBy('views', 'desc');
-    } else {
-      query = query.orderBy('createdAt', 'desc');
-    }
-
-    const snap = await query.limit(100).get();
-    allScripts = [];
-    snap.forEach(doc => {
-      allScripts.push({ id: doc.id, ...doc.data() });
-    });
-
+    const snap = await db.collection('scripts').orderBy('createdAt', 'desc').get();
+    allScripts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    renderScripts(allScripts);
     updateStats();
-    renderScripts();
-  } catch (err) {
-    console.error(err);
-    grid.innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i>
-      <h3>Erro ao carregar</h3><p>${err.message}</p></div>`;
+  } catch(err) {
+    grid.innerHTML = `<div class="empty-state"><i class="fa-solid fa-triangle-exclamation"></i><h3>Erro ao carregar</h3><p>${err.message}</p></div>`;
   }
 }
 
-function updateStats() {
-  let totalLikes = 0, totalViews = 0;
-  allScripts.forEach(s => {
-    totalLikes += s.likes || 0;
-    totalViews += s.views || 0;
-  });
-  document.getElementById('totalScripts').textContent = allScripts.length;
-  document.getElementById('totalLikes').textContent = totalLikes;
-  document.getElementById('totalViews').textContent = totalViews;
-}
-
-// ═══════════════════════════════════════
-//  SCRIPTS — RENDER
-// ═══════════════════════════════════════
-function renderScripts() {
+function renderScripts(scripts) {
   const grid = document.getElementById('scriptsGrid');
-  let list = [...allScripts];
-
-  // Filtro "Meus Scripts"
-  if (currentFilter === 'mine' && currentUser) {
-    list = list.filter(s => s.authorId === currentUser.uid);
-  }
-
-  // Busca
-  if (searchQuery) {
-    const q = searchQuery.toLowerCase();
-    list = list.filter(s =>
-      (s.title || '').toLowerCase().includes(q) ||
-      (s.description || '').toLowerCase().includes(q) ||
-      (s.author || '').toLowerCase().includes(q)
-    );
-  }
-
-  if (list.length === 0) {
-    grid.innerHTML = `<div class="empty-state">
-      <i class="fa-solid fa-folder-open"></i>
-      <h3>Nenhum script encontrado</h3>
-      <p>${searchQuery ? 'Tente outra busca.' : 'Seja o primeiro a publicar um script!'}</p>
-    </div>`;
+  document.getElementById('scriptCount').textContent = scripts.length + ' script' + (scripts.length !== 1 ? 's' : '');
+  if (!scripts.length) {
+    grid.innerHTML = '<div class="empty-state"><i class="fa-solid fa-ghost"></i><h3>Nenhum script encontrado</h3><p>Seja o primeiro a postar!</p></div>';
     return;
   }
-
-  grid.innerHTML = list.map((s, i) => {
-    const date = s.createdAt ? formatDate(s.createdAt) : '—';
+  grid.innerHTML = scripts.map((s, i) => {
+    const date = s.createdAt ? s.createdAt.toDate().toLocaleDateString('pt-BR') : 'Agora';
     const liked = currentUser && s.likedBy && s.likedBy.includes(currentUser.uid);
-    const isOwner = currentUser && s.authorId === currentUser.uid;
     const codePreview = escapeHtml((s.code || '').substring(0, 150));
-
+    const isNew = s.createdAt && (Date.now() - s.createdAt.toDate().getTime()) < 86400000;
     return `
-      <div class="script-card" style="animation-delay:${i * .06}s">
-        <div class="card-header">
-          <div class="card-title">${escapeHtml(s.title)}</div>
-          <div class="card-badge">LUA</div>
-        </div>
-        <div class="card-desc">${escapeHtml(s.description)}</div>
-        <div class="card-code">${codePreview}</div>
-        <div class="card-meta">
-          <div>
-            <span class="card-author"><i class="fa-solid fa-user"></i> ${escapeHtml(s.author)}</span>
-            <span class="card-date" style="margin-left:12px"><i class="fa-regular fa-calendar"></i> ${date}</span>
-          </div>
-          <div class="card-stats">
-            <span><i class="fa-solid fa-eye"></i> ${s.views || 0}</span>
-            <span><i class="fa-solid fa-heart"></i> ${s.likes || 0}</span>
-          </div>
-        </div>
-        <div class="card-actions">
-          <button class="action-btn btn-copy" onclick="copyScript('${s.id}')">
-            <i class="fa-regular fa-copy"></i> Copiar
-          </button>
-          <button class="action-btn btn-view" onclick="viewScript('${s.id}')">
-            <i class="fa-solid fa-expand"></i> Ver
-          </button>
-          <button class="action-btn btn-like ${liked ? 'liked' : ''}" onclick="toggleLike('${s.id}')">
-            <i class="fa-solid fa-heart"></i> ${s.likes || 0}
-          </button>
-          ${isOwner ? `<button class="action-btn btn-delete" onclick="deleteScript('${s.id}')">
-            <i class="fa-solid fa-trash"></i>
-          </button>` : ''}
-        </div>
-      </div>`;
+    <div class="script-card" style="animation-delay:${i*.06}s">
+      <div class="card-top">
+        <div class="card-title">${escapeHtml(s.title)} ${isNew ? '<span class="badge badge-new">NOVO</span>' : ''}</div>
+        <span class="card-date">${date}</span>
+      </div>
+      <p class="card-desc">${escapeHtml(s.description||'')}</p>
+      <div class="card-code-preview">${codePreview}</div>
+      <div class="card-meta">
+        <span><i class="fa-solid fa-user"></i> ${escapeHtml(s.authorName||'Anônimo')}</span>
+        <span><i class="fa-solid fa-eye"></i> ${s.views||0}</span>
+        <span><i class="fa-solid fa-heart"></i> ${s.likes||0}</span>
+      </div>
+      <div class="card-actions">
+        <button class="btn btn-sm btn-like ${liked?'liked':''}" onclick="toggleLike('${s.id}')"><i class="fa-solid fa-heart"></i> ${s.likes||0}</button>
+        <button class="btn btn-sm btn-copy-card" onclick="copyScriptById('${s.id}')"><i class="fa-solid fa-copy"></i> Copiar</button>
+        <button class="btn btn-sm btn-view-card" onclick="viewScript('${s.id}')"><i class="fa-solid fa-eye"></i> Ver</button>
+      </div>
+    </div>`;
   }).join('');
 }
 
-// ═══════════════════════════════════════
-//  SCRIPTS — POST
-// ═══════════════════════════════════════
-async function handlePost(e) {
+// =====================================================================
+// SCRIPTS - POST
+// =====================================================================
+async function handlePostScript(e) {
   e.preventDefault();
-  if (!currentUser) { toast('Faça login para postar.', 'error'); return; }
+  if (!currentUser) return toast('Faça login para postar.', 'error');
+  clearFieldErrors();
+  const btn   = document.getElementById('btnPost');
+  const title = document.getElementById('scriptTitle').value.trim();
+  const desc  = document.getElementById('scriptDesc').value.trim();
+  const code  = document.getElementById('scriptCode').value.trim();
+  if (!title || !desc || !code) return toast('Preencha todos os campos.', 'error');
 
-  const btn = document.getElementById('postBtn');
-  const title = document.getElementById('postTitle').value.trim();
-  const desc  = document.getElementById('postDesc').value.trim();
-  const code  = document.getElementById('postCode').value;
-
-  if (!title || !desc || !code) { toast('Preencha todos os campos.', 'error'); return; }
-
-  btn.disabled = true;
-  btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publicando...';
-
-  try {
-    await db.collection('scripts').add({
-      title,
-      description: desc,
-      code,
-      author: currentUsername,
-      authorId: currentUser.uid,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      views: 0,
-      likes: 0,
-      likedBy: []
-    });
-    toast('Script publicado com sucesso!', 'success');
-    closeModal('postModal');
-    document.getElementById('postForm').reset();
-    loadScripts();
-  } catch (err) {
-    toast('Erro ao publicar: ' + err.message, 'error');
+  // Filtro — só título e descrição
+  const filter = checkContentFilter(title, desc);
+  if (filter.blocked) {
+    toast(`🚫 Bloqueado: "${filter.word}" no ${filter.field}.`, 'error');
+    if (filter.field.includes('título')) showFieldError('scriptTitle','titleError',`Contém "${filter.word}"`);
+    if (filter.field.includes('descrição')) showFieldError('scriptDesc','descError',`Contém "${filter.word}"`);
+    return;
   }
-  btn.disabled = false;
-  btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Publicar Script';
-}
+  if (bannedUsers.includes(currentUser.uid)) return toast('🚫 Sua conta está banida.', 'error');
 
-// ═══════════════════════════════════════
-//  SCRIPTS — COPY
-// ═══════════════════════════════════════
-function copyScript(id) {
-  const script = allScripts.find(s => s.id === id);
-  if (!script) return;
-  navigator.clipboard.writeText(script.code).then(() => {
-    toast('Script copiado para a área de transferência!', 'success');
-  }).catch(() => {
-    // Fallback
-    const ta = document.createElement('textarea');
-    ta.value = script.code;
-    document.body.appendChild(ta);
-    ta.select();
-    document.execCommand('copy');
-    document.body.removeChild(ta);
-    toast('Script copiado!', 'success');
-  });
-}
+  if (!isAdmin) {
+    btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Verificando...';
+    const canPost = await checkDailyLimit();
+    if (!canPost) {
+      toast(`Você já postou ${MAX_DAILY_POSTS} scripts hoje!`, 'warn');
+      btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Publicar Script';
+      return;
+    }
+  }
 
-// ═══════════════════════════════════════
-//  SCRIPTS — VIEW
-// ═══════════════════════════════════════
-async function viewScript(id) {
-  const script = allScripts.find(s => s.id === id);
-  if (!script) return;
-
-  // Incrementar visualização
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Publicando...';
   try {
-    await db.collection('scripts').doc(id).update({
-      views: firebase.firestore.FieldValue.increment(1)
+    const authorName = (currentUserDoc?.username || currentUser.displayName || currentUser.email.split('@')[0]).substring(0,20);
+    await db.collection('scripts').add({
+      title, description: desc, code,
+      authorId: currentUser.uid, authorName, authorEmail: currentUser.email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      likes: 0, likedBy: [], views: 0
     });
-    script.views = (script.views || 0) + 1;
-    updateStats();
-  } catch (e) { /* ok */ }
+    toast('Script publicado! 🎉', 'success');
+    closeModal('postModal');
+    document.getElementById('scriptTitle').value = '';
+    document.getElementById('scriptDesc').value = '';
+    document.getElementById('scriptCode').value = '';
+    loadScripts();
+  } catch(err) { toast('Erro: ' + err.message, 'error'); }
+  btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Publicar Script';
+}
 
-  const date = script.createdAt ? formatDate(script.createdAt) : '—';
+function showFieldError(inputId, errorId, msg) {
+  const i = document.getElementById(inputId);
+  const e = document.getElementById(errorId);
+  if (i) i.classList.add('input-error');
+  if (e) { e.textContent = '⚠ ' + msg; e.classList.add('visible'); }
+}
+function clearFieldErrors() {
+  ['scriptTitle','scriptDesc','scriptCode'].forEach(id => { const el = document.getElementById(id); if (el) el.classList.remove('input-error'); });
+  ['titleError','descError','codeError'].forEach(id => { const el = document.getElementById(id); if (el) { el.textContent = ''; el.classList.remove('visible'); } });
+}
+['scriptTitle','scriptDesc','scriptCode'].forEach(id => { const el = document.getElementById(id); if (el) el.addEventListener('input', clearFieldErrors); });
+
+async function checkDailyLimit() {
+  try {
+    const snap = await db.collection('scripts').where('authorId','==',currentUser.uid).get();
+    const today = new Date(); today.setHours(0,0,0,0);
+    return snap.docs.filter(d => { const c = d.data().createdAt; return c && c.toDate() >= today; }).length < MAX_DAILY_POSTS;
+  } catch(e) { return true; }
+}
+
+// =====================================================================
+// LIKE
+// =====================================================================
+async function toggleLike(scriptId) {
+  if (!currentUser) return toast('Faça login para curtir.', 'error');
+  const ref = db.collection('scripts').doc(scriptId);
+  try {
+    const doc = await ref.get(); if (!doc.exists) return;
+    const data = doc.data();
+    const liked = data.likedBy && data.likedBy.includes(currentUser.uid);
+    await ref.update(liked ? {
+      likedBy: firebase.firestore.FieldValue.arrayRemove(currentUser.uid),
+      likes: firebase.firestore.FieldValue.increment(-1)
+    } : {
+      likedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid),
+      likes: firebase.firestore.FieldValue.increment(1)
+    });
+    loadScripts();
+    if (viewingScript === scriptId) {
+      const u = await ref.get(); const ud = u.data();
+      document.getElementById('viewLikeCount').textContent = ud.likes || 0;
+      const vlBtn = document.getElementById('viewLikeBtn');
+      if (ud.likedBy && ud.likedBy.includes(currentUser.uid)) vlBtn.classList.add('liked'); else vlBtn.classList.remove('liked');
+    }
+  } catch(e) { toast('Erro ao curtir.', 'error'); }
+}
+
+// =====================================================================
+// VIEW
+// =====================================================================
+async function viewScript(scriptId) {
+  const script = allScripts.find(s => s.id === scriptId);
+  if (!script) return;
+  viewingScript = scriptId;
+  try { await db.collection('scripts').doc(scriptId).update({ views: firebase.firestore.FieldValue.increment(1) }); script.views = (script.views||0)+1; } catch(e) {}
+  const date = script.createdAt ? script.createdAt.toDate().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'}) : 'Agora';
   const liked = currentUser && script.likedBy && script.likedBy.includes(currentUser.uid);
-
-  document.getElementById('viewBody').innerHTML = `
-    <div class="view-title">${escapeHtml(script.title)}</div>
-    <div class="view-meta">
-      <span><i class="fa-solid fa-user" style="color:var(--accent3)"></i> ${escapeHtml(script.author)}</span>
-      <span><i class="fa-regular fa-calendar"></i> ${date}</span>
-      <span><i class="fa-solid fa-eye" style="color:var(--accent2)"></i> ${script.views || 0} views</span>
-      <span><i class="fa-solid fa-heart" style="color:var(--danger)"></i> ${script.likes || 0} likes</span>
-    </div>
-    <div class="view-desc">${escapeHtml(script.description)}</div>
-    <div class="view-code-header">
-      <span><i class="fa-solid fa-code"></i> Código Lua</span>
-      <button class="action-btn btn-copy" onclick="copyScript('${script.id}')" style="flex:unset;padding:6px 14px;font-size:.8rem">
-        <i class="fa-regular fa-copy"></i> Copiar
-      </button>
-    </div>
-    <div class="view-code-block">${escapeHtml(script.code)}</div>
-    <div class="view-actions">
-      <button class="action-btn btn-like ${liked ? 'liked' : ''}" onclick="toggleLike('${script.id}');viewScript('${script.id}')">
-        <i class="fa-solid fa-heart"></i> ${liked ? 'Descurtir' : 'Curtir'} (${script.likes || 0})
-      </button>
-      <button class="action-btn btn-copy" onclick="copyScript('${script.id}')">
-        <i class="fa-regular fa-copy"></i> Copiar Script
-      </button>
-    </div>
-  `;
+  document.getElementById('viewTitle').innerHTML = `<i class="fa-solid fa-scroll"></i> ${escapeHtml(script.title)}`;
+  document.getElementById('viewMeta').innerHTML = `
+    <span><i class="fa-solid fa-user"></i> ${escapeHtml(script.authorName||'Anônimo')}</span>
+    <span><i class="fa-solid fa-calendar"></i> ${date}</span>
+    <span><i class="fa-solid fa-eye"></i> ${script.views||0} views</span>
+    <span><i class="fa-solid fa-heart"></i> ${script.likes||0} likes</span>`;
+  document.getElementById('viewDesc').textContent = script.description || '';
+  document.getElementById('viewCode').textContent = script.code || '';
+  document.getElementById('viewLikeCount').textContent = script.likes || 0;
+  const vlBtn = document.getElementById('viewLikeBtn');
+  vlBtn.className = 'btn btn-like' + (liked ? ' liked' : '');
+  vlBtn.onclick = () => toggleLike(scriptId);
   openModal('viewModal');
 }
 
-// ═══════════════════════════════════════
-//  SCRIPTS — LIKE
-// ═══════════════════════════════════════
-async function toggleLike(id) {
-  if (!currentUser) { toast('Faça login para curtir.', 'error'); return; }
+function copyViewScript() { const s = allScripts.find(s => s.id === viewingScript); if (s) copyToClipboard(s.code); }
 
-  const script = allScripts.find(s => s.id === id);
-  if (!script) return;
-
-  const likedBy = script.likedBy || [];
-  const hasLiked = likedBy.includes(currentUser.uid);
-
-  try {
-    if (hasLiked) {
-      await db.collection('scripts').doc(id).update({
-        likes: firebase.firestore.FieldValue.increment(-1),
-        likedBy: firebase.firestore.FieldValue.arrayRemove(currentUser.uid)
-      });
-      script.likes = Math.max(0, (script.likes || 0) - 1);
-      script.likedBy = likedBy.filter(uid => uid !== currentUser.uid);
-    } else {
-      await db.collection('scripts').doc(id).update({
-        likes: firebase.firestore.FieldValue.increment(1),
-        likedBy: firebase.firestore.FieldValue.arrayUnion(currentUser.uid)
-      });
-      script.likes = (script.likes || 0) + 1;
-      script.likedBy = [...likedBy, currentUser.uid];
-    }
-    updateStats();
-    renderScripts();
-  } catch (err) {
-    toast('Erro ao curtir.', 'error');
-  }
-}
-
-// ═══════════════════════════════════════
-//  SCRIPTS — DELETE
-// ═══════════════════════════════════════
-async function deleteScript(id) {
-  if (!currentUser) return;
-  if (!confirm('Tem certeza que deseja deletar este script?')) return;
-
-  try {
-    await db.collection('scripts').doc(id).delete();
-    toast('Script deletado.', 'info');
-    allScripts = allScripts.filter(s => s.id !== id);
-    updateStats();
-    renderScripts();
-  } catch (err) {
-    toast('Erro ao deletar: ' + err.message, 'error');
-  }
-}
-
-// ═══════════════════════════════════════
-//  FILTERS & SEARCH
-// ═══════════════════════════════════════
-function setFilter(filter) {
-  currentFilter = filter;
-  document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.filter === filter);
+// =====================================================================
+// COPY
+// =====================================================================
+function copyScriptById(id) { const s = allScripts.find(s => s.id === id); if (s) copyToClipboard(s.code); }
+function copyToClipboard(text) {
+  navigator.clipboard.writeText(text).then(() => toast('Script copiado! 📋', 'success')).catch(() => {
+    const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText='position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
+    toast('Script copiado! 📋', 'success');
   });
-  loadScripts();
 }
 
-function resetFilters() {
-  searchQuery = '';
-  document.getElementById('searchInput').value = '';
-  setFilter('recent');
+// =====================================================================
+// ADMIN
+// =====================================================================
+async function openAdminPanel() {
+  if (!isAdmin) return toast('Acesso negado.', 'error');
+  await loadBlockedWords(); await loadBannedUsers();
+  renderAdminScripts(); renderBlockedWords(); renderBannedUsers();
+  openModal('adminModal');
 }
 
-function handleSearch() {
-  searchQuery = document.getElementById('searchInput').value.trim();
-  renderScripts();
+async function renderAdminScripts() {
+  const statsEl = document.getElementById('adminStats');
+  const listEl  = document.getElementById('adminList');
+  listEl.innerHTML = '<div class="loader"><div class="spinner"></div></div>';
+  let totalUsers = 0;
+  try { totalUsers = (await db.collection('users').get()).size; } catch(e) {}
+  const totalLikes = allScripts.reduce((a,s) => a+(s.likes||0), 0);
+  const totalViews = allScripts.reduce((a,s) => a+(s.views||0), 0);
+  statsEl.innerHTML = `
+    <div class="admin-stat"><div class="num">${allScripts.length}</div><div class="lbl">Scripts</div></div>
+    <div class="admin-stat"><div class="num">${totalUsers}</div><div class="lbl">Usuários</div></div>
+    <div class="admin-stat"><div class="num">${totalLikes}</div><div class="lbl">Curtidas</div></div>
+    <div class="admin-stat"><div class="num">${totalViews}</div><div class="lbl">Views</div></div>
+    <div class="admin-stat"><div class="num" style="background:linear-gradient(135deg,#ef4444,#dc2626);-webkit-background-clip:text">${bannedUsers.length}</div><div class="lbl">Banidos</div></div>`;
+  if (!allScripts.length) {
+    listEl.innerHTML = '<p style="color:var(--text3);text-align:center;padding:20px">Nenhum script.</p>';
+  } else {
+    listEl.innerHTML = allScripts.map(s => {
+      const date = s.createdAt ? s.createdAt.toDate().toLocaleDateString('pt-BR') : '?';
+      const banned = bannedUsers.includes(s.authorId);
+      return `
+      <div class="admin-item ${banned?'flagged':''}">
+        <div class="admin-item-info">
+          <div class="admin-item-title">${escapeHtml(s.title)} ${banned?'<span class="badge badge-blocked">BANIDO</span>':''}</div>
+          <div class="admin-item-meta"><i class="fa-solid fa-user"></i> ${escapeHtml(s.authorName||'?')} (${escapeHtml(s.authorEmail||'?')}) | <i class="fa-solid fa-calendar"></i> ${date} | <i class="fa-solid fa-eye"></i> ${s.views||0} | <i class="fa-solid fa-heart"></i> ${s.likes||0}</div>
+        </div>
+        <div class="admin-item-actions">
+          <button class="btn btn-xs btn-view-card" onclick="viewScript('${s.id}')"><i class="fa-solid fa-eye"></i></button>
+          ${!banned && s.authorId ? `<button class="btn btn-xs btn-flag" onclick="banUserById('${s.authorId}','${escapeHtml(s.authorName||'').replace(/'/g,"\\'")}')"><i class="fa-solid fa-ban"></i></button>` : ''}
+          <button class="btn btn-xs btn-danger" onclick="adminDeleteScript('${s.id}','${escapeHtml(s.title).replace(/'/g,"\\'")}')"><i class="fa-solid fa-trash"></i></button>
+        </div>
+      </div>`;
+    }).join('');
+  }
 }
 
-// ═══════════════════════════════════════
-//  MODALS
-// ═══════════════════════════════════════
+async function adminDeleteScript(id, title) {
+  if (!isAdmin) return;
+  if (!confirm(`Deletar "${title}"?`)) return;
+  try { await db.collection('scripts').doc(id).delete(); toast('Deletado.', 'success'); await loadScripts(); renderAdminScripts(); }
+  catch(e) { toast('Erro: '+e.message, 'error'); }
+}
+
+function renderBlockedWords() {
+  const list = document.getElementById('blockedWordsList');
+  if (!blockedWords.length) { list.innerHTML = '<p style="color:var(--text3);font-size:.85rem">Nenhuma palavra bloqueada.</p>'; return; }
+  list.innerHTML = blockedWords.map((w,i) => `<span class="blocked-word-tag">${escapeHtml(w)}<button onclick="removeBlockedWord(${i})"><i class="fa-solid fa-xmark"></i></button></span>`).join('');
+}
+async function addBlockedWord() {
+  if (!isAdmin) return;
+  const input = document.getElementById('newBlockedWord');
+  const word = input.value.trim().toLowerCase();
+  if (!word) return toast('Digite uma palavra.', 'error');
+  if (blockedWords.includes(word)) return toast('Já na lista.', 'warn');
+  blockedWords.push(word); await saveBlockedWords(); renderBlockedWords(); input.value = '';
+  toast(`"${word}" adicionada.`, 'success');
+}
+async function removeBlockedWord(i) {
+  if (!isAdmin) return;
+  const w = blockedWords[i]; blockedWords.splice(i,1); await saveBlockedWords(); renderBlockedWords();
+  toast(`"${w}" removida.`, 'info');
+}
+
+function renderBannedUsers() {
+  const list = document.getElementById('bannedList');
+  if (!bannedUsers.length) { list.innerHTML = '<p style="color:var(--text3);font-size:.85rem;text-align:center;padding:20px">Nenhum banido.</p>'; return; }
+  list.innerHTML = bannedUsers.map((uid,i) => `
+    <div class="admin-item flagged">
+      <div class="admin-item-info"><div class="admin-item-title"><i class="fa-solid fa-user-slash" style="color:var(--error);margin-right:6px"></i> ${uid}</div></div>
+      <div class="admin-item-actions"><button class="btn btn-xs btn-success" onclick="unbanUser(${i})"><i class="fa-solid fa-user-check"></i> Desbanir</button></div>
+    </div>`).join('');
+}
+async function banUser() {
+  if (!isAdmin) return;
+  const input = document.getElementById('banUserId');
+  const uid = input.value.trim();
+  if (!uid) return toast('Digite o UID.', 'error');
+  if (bannedUsers.includes(uid)) return toast('Já banido.', 'warn');
+  bannedUsers.push(uid); await saveBannedUsers(); renderBannedUsers(); input.value = '';
+  toast('Banido.', 'success');
+}
+async function banUserById(uid, name) {
+  if (!isAdmin) return;
+  if (!confirm(`Banir "${name}"?`)) return;
+  if (bannedUsers.includes(uid)) return toast('Já banido.', 'warn');
+  bannedUsers.push(uid); await saveBannedUsers(); renderAdminScripts(); renderBannedUsers();
+  toast(`"${name}" banido.`, 'success');
+}
+async function unbanUser(i) {
+  if (!isAdmin) return;
+  bannedUsers.splice(i,1); await saveBannedUsers(); renderBannedUsers(); renderAdminScripts();
+  toast('Desbanido.', 'info');
+}
+
+function switchAdminTab(tab, btn) {
+  document.querySelectorAll('#adminTabs .tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#adminModal .tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('admin-tab-' + tab).classList.add('active');
+}
+
+// =====================================================================
+// SEARCH
+// =====================================================================
+document.getElementById('searchInput').addEventListener('input', function() {
+  const q = this.value.trim().toLowerCase();
+  if (!q) { renderScripts(allScripts); return; }
+  renderScripts(allScripts.filter(s =>
+    (s.title||'').toLowerCase().includes(q) ||
+    (s.description||'').toLowerCase().includes(q) ||
+    (s.authorName||'').toLowerCase().includes(q)
+  ));
+});
+
+// =====================================================================
+// STATS
+// =====================================================================
+async function updateStats() {
+  document.getElementById('statScripts').textContent = allScripts.length;
+  document.getElementById('statLikes').textContent = allScripts.reduce((a,s) => a+(s.likes||0), 0);
+  try { document.getElementById('statUsers').textContent = (await db.collection('users').get()).size; }
+  catch(e) { document.getElementById('statUsers').textContent = '—'; }
+}
+
+// =====================================================================
+// MODALS & TABS
+// =====================================================================
 function openModal(id) {
-  const el = document.getElementById(id);
-  el.style.display = 'flex';
+  const el = document.getElementById(id); el.style.display = 'flex';
   requestAnimationFrame(() => el.classList.add('active'));
   document.body.style.overflow = 'hidden';
 }
-
 function closeModal(id) {
-  const el = document.getElementById(id);
-  el.classList.remove('active');
+  const el = document.getElementById(id); el.classList.remove('active');
   setTimeout(() => { el.style.display = 'none'; }, 300);
   document.body.style.overflow = '';
+  if (id === 'viewModal') viewingScript = null;
+  if (id === 'postModal') clearFieldErrors();
 }
-
-// Fechar modal ao clicar no overlay
-document.querySelectorAll('.modal-overlay').forEach(overlay => {
-  overlay.addEventListener('click', e => {
-    if (e.target === overlay) closeModal(overlay.id);
-  });
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-overlay.active').forEach(el => closeModal(el.id));
 });
 
-// ═══════════════════════════════════════
-//  TOAST
-// ═══════════════════════════════════════
+function switchTab(tab, btn) {
+  document.querySelectorAll('#authTabs .tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('#authModal .tab-content').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+// =====================================================================
+// TOAST
+// =====================================================================
 function toast(msg, type = 'info') {
-  const container = document.getElementById('toastContainer');
-  const icons = { success: 'fa-check-circle', error: 'fa-circle-xmark', info: 'fa-circle-info' };
+  const c = document.getElementById('toastContainer');
+  const icons = { success:'fa-check-circle', error:'fa-circle-exclamation', warn:'fa-triangle-exclamation', info:'fa-circle-info' };
   const el = document.createElement('div');
-  el.className = `toast ${type}`;
-  el.innerHTML = `<i class="fa-solid ${icons[type] || icons.info}"></i> ${msg}`;
-  container.appendChild(el);
-  setTimeout(() => { el.style.opacity = '0'; el.style.transform = 'translateX(60px)'; el.style.transition = '.3s'; }, 3500);
-  setTimeout(() => el.remove(), 3800);
+  el.className = 'toast ' + type;
+  el.innerHTML = `<i class="fa-solid ${icons[type]||icons.info}"></i> ${msg}`;
+  c.appendChild(el);
+  setTimeout(() => { el.style.animation = 'toastOut .4s ease-in forwards'; setTimeout(() => el.remove(), 400); }, 4000);
 }
 
-// ═══════════════════════════════════════
-//  HELPERS
-// ═══════════════════════════════════════
-function escapeHtml(str) {
-  if (!str) return '';
-  const d = document.createElement('div');
-  d.textContent = str;
-  return d.innerHTML;
-}
-
-function formatDate(ts) {
-  if (!ts) return '—';
-  const d = ts.toDate ? ts.toDate() : new Date(ts);
-  return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
-}
-
-// Navbar scroll effect
+// =====================================================================
+// UTILS
+// =====================================================================
 window.addEventListener('scroll', () => {
-  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 20);
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 30);
 });
+function escapeHtml(t) { const d = document.createElement('div'); d.textContent = t || ''; return d.innerHTML; }
+function firebaseError(code) {
+  const m = {
+    'auth/email-already-in-use':'Email já em uso.',
+    'auth/invalid-email':'Email inválido.',
+    'auth/weak-password':'Senha deve ter 6+ caracteres.',
+    'auth/user-not-found':'Usuário não encontrado.',
+    'auth/wrong-password':'Senha incorreta.',
+    'auth/too-many-requests':'Muitas tentativas.',
+    'auth/invalid-credential':'Email ou senha incorretos.',
+    'auth/network-request-failed':'Erro de conexão.',
+  };
+  return m[code] || 'Erro: ' + code;
+}
 </script>
 </body>
 </html>
